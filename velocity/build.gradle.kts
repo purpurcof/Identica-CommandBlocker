@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     compileOnly(libs.velocity)
+    annotationProcessor(libs.velocity)
     compileOnly(libs.identica.api)
     compileOnly(libs.keystone)
     compileOnly(libs.guice)
