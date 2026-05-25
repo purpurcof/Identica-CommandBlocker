@@ -1,0 +1,5 @@
+name: Identica-CommandBlocker
+main: me.purpurcof.identica.addon.commandblocker.bungeecord.BungeeCordCommandBlockerPlugin
+version: 1.0.0
+author: purpurcof
+depends: Identica

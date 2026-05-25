@@ -1,0 +1,14 @@
+{
+  "id": "identica-commandblocker",
+  "name": "Identica-CommandBlocker",
+  "version": "1.0.0",
+  "main": "me.purpurcof.identica.addon.commandblocker.velocity.VelocityCommandBlockerPlugin",
+  "description": "Blocks commands during authentication",
+  "authors": ["purpurcof"],
+  "dependencies": [
+    {
+      "id": "identica",
+      "optional": false
+    }
+  ]
+}
