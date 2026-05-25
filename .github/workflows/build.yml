@@ -20,4 +20,6 @@ jobs:
 
       - run: chmod +x gradlew
 
-      - run: ./gradlew build --no-daemon
+      - run: ./gradlew test --no-daemon
+
+      - run: ./gradlew :velocity:shadowJar :bungeecord:shadowJar --no-daemon
