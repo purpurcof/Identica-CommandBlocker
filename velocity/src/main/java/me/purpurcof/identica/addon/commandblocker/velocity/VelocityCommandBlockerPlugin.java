@@ -8,6 +8,8 @@ import com.velocitypowered.api.event.command.PlayerAvailableCommandsEvent;
 import com.velocitypowered.api.event.command.CommandExecuteEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
+import com.velocitypowered.api.plugin.Dependency;
+import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
 import me.purpurcof.identica.addon.commandblocker.collector.DefaultCommandDefinitionCollector;
@@ -23,6 +25,16 @@ import org.slf4j.Logger;
 
 import java.nio.file.Path;
 
+@Plugin(
+        id = "identica-commandblocker",
+        name = "Identica-CommandBlocker",
+        version = "1.0.0",
+        description = "Blocks commands during authentication",
+        authors = {"purpurcof"},
+        dependencies = {
+                @Dependency(id = "identica", optional = false)
+        }
+)
 public class VelocityCommandBlockerPlugin {
 
     private final Logger logger;
