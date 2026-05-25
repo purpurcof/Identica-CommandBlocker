@@ -23,3 +23,10 @@ jobs:
       - run: ./gradlew test --no-daemon
 
       - run: ./gradlew :velocity:shadowJar :bungeecord:shadowJar --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Identica-CommandBlocker
+          path: |
+            velocity/build/libs/*.jar
+            bungeecord/build/libs/*.jar
