@@ -2,6 +2,7 @@ package me.purpurcof.identica.addon.commandblocker.config;
 
 import me.whereareiam.configura.Config;
 import me.whereareiam.configura.type.Format;
+import me.whereareiam.identica.config.ConfigurationTypeResolver;
 
 import java.nio.file.Path;
 import java.util.Set;
@@ -13,8 +14,20 @@ public class CommandBlockerConfiguration {
     private CommandBlockerConfig data;
 
     public CommandBlockerConfiguration(Path dataDirectory) {
+        this(dataDirectory, (ConfigurationTypeResolver) null);
+    }
+
+    public CommandBlockerConfiguration(Path dataDirectory, ConfigurationTypeResolver typeResolver) {
+        Format format = Format.YAML;
+        if (typeResolver != null) {
+            format = typeResolver.getConfigurationType();
+        } else {
+            Config defaults = Config.defaults();
+            if (defaults != null && "json".equals(defaults.extension()))
+                format = Format.JSON;
+        }
         this.config = Config.builder()
-                .format(Format.YAML)
+                .format(format)
                 .defaults(CommandBlockerConfigDefaults.class)
                 .build();
         this.path = dataDirectory.resolve("settings");

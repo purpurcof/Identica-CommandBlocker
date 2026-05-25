@@ -16,6 +16,7 @@ import me.purpurcof.identica.addon.commandblocker.service.DefaultCommandFilterSe
 import me.purpurcof.identica.addon.commandblocker.velocity.listener.CommandBlockerListener;
 import me.purpurcof.identica.addon.commandblocker.velocity.listener.TabCompleteFilterListener;
 import me.whereareiam.identica.IdenticaAPI;
+import me.whereareiam.identica.config.ConfigurationTypeResolver;
 import me.whereareiam.identica.identity.IdentityService;
 import me.whereareiam.identica.identity.session.SessionService;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ public class VelocityCommandBlockerPlugin {
 
     private final Logger logger;
     private final EventManager eventManager;
-    private final CommandBlockerConfiguration config;
+    private final Path dataDirectory;
 
     @Inject
     public VelocityCommandBlockerPlugin(
@@ -36,7 +37,7 @@ public class VelocityCommandBlockerPlugin {
     ) {
         this.logger = logger;
         this.eventManager = eventManager;
-        this.config = new CommandBlockerConfiguration(dataDirectory);
+        this.dataDirectory = dataDirectory;
     }
 
     @Subscribe
@@ -46,6 +47,8 @@ public class VelocityCommandBlockerPlugin {
             return;
         }
 
+        ConfigurationTypeResolver typeResolver = IdenticaAPI.getService(ConfigurationTypeResolver.class);
+        CommandBlockerConfiguration config = new CommandBlockerConfiguration(dataDirectory, typeResolver);
         IdentityService identityService = IdenticaAPI.getPresenceService();
         SessionService sessionService = IdenticaAPI.getSessionService();
         CommandDefinitionCollector definitionCollector = new DefaultCommandDefinitionCollector(config);

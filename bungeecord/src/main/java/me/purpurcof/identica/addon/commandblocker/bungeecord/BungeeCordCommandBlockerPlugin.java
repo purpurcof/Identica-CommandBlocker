@@ -7,6 +7,7 @@ import me.purpurcof.identica.addon.commandblocker.service.DefaultCommandFilterSe
 import me.purpurcof.identica.addon.commandblocker.bungeecord.listener.CommandBlockerListener;
 import me.purpurcof.identica.addon.commandblocker.bungeecord.listener.TabCompleteFilterListener;
 import me.whereareiam.identica.IdenticaAPI;
+import me.whereareiam.identica.config.ConfigurationTypeResolver;
 import me.whereareiam.identica.identity.IdentityService;
 import me.whereareiam.identica.identity.session.SessionService;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -15,12 +16,13 @@ public class BungeeCordCommandBlockerPlugin extends Plugin {
 
     @Override
     public void onEnable() {
-        CommandBlockerConfiguration config = new CommandBlockerConfiguration(getDataFolder().toPath());
-
         if (!IdenticaAPI.isInitialized()) {
             getLogger().warning("IdenticaAPI not initialized, command blocker will not work");
             return;
         }
+
+        ConfigurationTypeResolver typeResolver = IdenticaAPI.getService(ConfigurationTypeResolver.class);
+        CommandBlockerConfiguration config = new CommandBlockerConfiguration(getDataFolder().toPath(), typeResolver);
 
         IdentityService identityService = IdenticaAPI.getPresenceService();
         SessionService sessionService = IdenticaAPI.getSessionService();
