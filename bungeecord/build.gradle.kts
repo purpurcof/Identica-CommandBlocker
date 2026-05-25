@@ -1,5 +1,6 @@
 plugins {
     id("com.gradleup.shadow")
+    alias(libs.plugins.attache)
 }
 
 dependencies {
@@ -10,6 +11,7 @@ dependencies {
     compileOnly(libs.adventure)
     compileOnly(libs.annotations)
     implementation(project(":common"))
+    implementation(libs.attache.bungeecord)
 
     testImplementation(libs.bungeecord)
     testImplementation(libs.identica.api)
@@ -21,7 +23,6 @@ dependencies {
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.junit)
 }
-
 tasks.shadowJar {
     archiveClassifier.set("")
     archiveFileName.set("Identica-CommandBlocker-BungeeCord-${project.version}.jar")

@@ -10,6 +10,7 @@ velocity = "3.5.0-SNAPSHOT"
 junit = "5.12.2"
 junit-platform = "1.12.2"
 mockito = "5.20.0"
+attache = "dev-5e11e1c"
 
 [libraries]
 identica-api = { group = "me.whereareiam.identica", name = "api", version.ref = "identica" }
@@ -27,3 +28,11 @@ junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.r
 junit-platform = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit-platform" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-junit = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
+
+# attache
+attache-standalone = { group = "me.whereareiam", name = "attache-standalone", version.ref = "attache" }
+attache-velocity = { group = "me.whereareiam", name = "attache-velocity", version.ref = "attache" }
+attache-bungeecord = { group = "me.whereareiam", name = "attache-bungeecord", version.ref = "attache" }
+
+[plugins]
+attache = { id = "me.whereareiam.attache", version.ref = "attache" }

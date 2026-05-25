@@ -1,5 +1,6 @@
 plugins {
     id("com.gradleup.shadow")
+    alias(libs.plugins.attache)
 }
 
 dependencies {
@@ -10,6 +11,7 @@ dependencies {
     compileOnly(libs.adventure)
     compileOnly(libs.annotations)
     implementation(project(":common"))
+    implementation(libs.attache.velocity)
 
     testImplementation(libs.velocity)
     testImplementation(libs.identica.api)
