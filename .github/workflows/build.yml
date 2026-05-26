@@ -1,32 +1,58 @@
-name: Build
+name: Development build
 
 on:
   push:
-    branches: [main, dev]
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
 
 jobs:
-  build:
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      name: ${{ steps.details.outputs.name }}
+      version: ${{ steps.details.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract project details
+        id: details
+        shell: bash
+        run: |
+          echo "name=$(grep 'rootProject.name' settings.gradle.kts | awk -F "=" '{print $2}' | tr -d ' \"\n')" >> $GITHUB_OUTPUT
+          branch_name="${GITHUB_REF_NAME//\//-}"
+          echo "version=${branch_name}-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+  build:
+    needs: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      - name: Build project
+        uses: ./.github/actions/gradle-build
         with:
-          distribution: temurin
-          java-version: 21
+          gradle-command: ./gradlew --no-daemon test :velocity:shadowJar :bungeecord:shadowJar
 
-      - uses: gradle/actions/setup-gradle@v4
+      - name: Create output directory
+        shell: bash
+        run: mkdir output
 
-      - run: chmod +x gradlew
+      - name: Move jars
+        shell: bash
+        run: |
+          mv velocity/build/libs/*.jar output/${{ needs.prepare.outputs.name }}-Velocity-${{ needs.prepare.outputs.version }}.jar
+          mv bungeecord/build/libs/*.jar output/${{ needs.prepare.outputs.name }}-BungeeCord-${{ needs.prepare.outputs.version }}.jar
 
-      - run: ./gradlew test --no-daemon
-
-      - run: ./gradlew :velocity:shadowJar :bungeecord:shadowJar --no-daemon
-
-      - uses: actions/upload-artifact@v4
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: Identica-CommandBlocker
-          path: |
-            velocity/build/libs/*.jar
-            bungeecord/build/libs/*.jar
+          name: ${{ needs.prepare.outputs.name }}
+          path: output/

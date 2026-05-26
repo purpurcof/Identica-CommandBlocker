@@ -1,0 +1,30 @@
+name: Pull request
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+      - ready_for_review
+
+concurrency:
+  group: pull-request-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build project
+        uses: ./.github/actions/gradle-build
+        with:
+          gradle-command: ./gradlew --no-daemon test :velocity:shadowJar :bungeecord:shadowJar
