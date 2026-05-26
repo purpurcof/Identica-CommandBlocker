@@ -8,6 +8,7 @@ plugins {
 dependencies {
     compileOnly(libs.configura)
     compileOnly(libs.adventure.minimessage)
+    api(project(":api"))
     implementation(libs.attache.standalone)
     attache(libs.configura)
 

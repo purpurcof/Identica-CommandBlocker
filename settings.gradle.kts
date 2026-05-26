@@ -20,6 +20,7 @@ dependencyResolutionManagement {
     }
 }
 
+include(":api")
 include(":common")
 include(":velocity")
 include(":bungeecord")
