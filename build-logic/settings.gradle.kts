@@ -1,4 +1,4 @@
-rootProject.name = "Identica-CommandBlocker"
+rootProject.name = "build-logic"
 
 pluginManagement {
     repositories {
@@ -10,18 +10,16 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
+        gradlePluginPortal()
         mavenCentral()
         maven("https://maven.whereareiam.me/release")
         maven("https://maven.whereareiam.me/development")
-        maven("https://repo.papermc.io/repository/maven-public/")
-        maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    }
+
+    versionCatalogs {
+        create("libs") {
+            from(files("../gradle/libs.versions.toml"))
+        }
     }
 }
-
-include(":common")
-include(":velocity")
-include(":bungeecord")
-
-includeBuild("build-logic")

@@ -11,6 +11,7 @@ junit = "5.12.2"
 junit-platform = "1.12.2"
 mockito = "5.20.0"
 attache = "dev-5e11e1c"
+shadow = "9.3.0"
 
 [libraries]
 identica-api = { group = "me.whereareiam.identica", name = "api", version.ref = "identica" }
@@ -34,5 +35,8 @@ attache-standalone = { group = "me.whereareiam", name = "attache-standalone", ve
 attache-velocity = { group = "me.whereareiam", name = "attache-velocity", version.ref = "attache" }
 attache-bungeecord = { group = "me.whereareiam", name = "attache-bungeecord", version.ref = "attache" }
 
+shadow-gradle-plugin = { group = "com.gradleup.shadow", name = "shadow-gradle-plugin", version.ref = "shadow" }
+
 [plugins]
 attache = { id = "me.whereareiam.attache", version.ref = "attache" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
