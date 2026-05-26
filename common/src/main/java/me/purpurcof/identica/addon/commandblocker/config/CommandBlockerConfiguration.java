@@ -14,18 +14,11 @@ public class CommandBlockerConfiguration {
     private CommandBlockerConfig data;
 
     public CommandBlockerConfiguration(Path dataDirectory) {
-        this(dataDirectory, (ConfigurationTypeResolver) null);
+        this(dataDirectory, null);
     }
 
     public CommandBlockerConfiguration(Path dataDirectory, ConfigurationTypeResolver typeResolver) {
-        Format format = Format.YAML;
-        if (typeResolver != null) {
-            format = typeResolver.getConfigurationType();
-        } else {
-            Config defaults = Config.defaults();
-            if (defaults != null && "json".equals(defaults.extension()))
-                format = Format.JSON;
-        }
+        Format format = typeResolver != null ? typeResolver.getConfigurationType() : Format.YAML;
         this.config = Config.builder()
                 .format(format)
                 .defaults(CommandBlockerConfigDefaults.class)
