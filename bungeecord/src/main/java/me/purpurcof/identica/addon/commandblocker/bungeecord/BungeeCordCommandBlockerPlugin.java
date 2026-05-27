@@ -9,7 +9,6 @@ import me.purpurcof.identica.addon.commandblocker.bungeecord.listener.TabComplet
 import me.whereareiam.identica.IdenticaAPI;
 import me.whereareiam.identica.config.ConfigurationTypeResolver;
 import me.whereareiam.identica.identity.IdentityService;
-import me.whereareiam.identica.identity.session.SessionService;
 import net.md_5.bungee.api.plugin.Plugin;
 
 public class BungeeCordCommandBlockerPlugin extends Plugin {
@@ -25,16 +24,15 @@ public class BungeeCordCommandBlockerPlugin extends Plugin {
         CommandBlockerConfiguration config = new CommandBlockerConfiguration(getDataFolder().toPath(), typeResolver);
 
         IdentityService identityService = IdenticaAPI.getPresenceService();
-        SessionService sessionService = IdenticaAPI.getSessionService();
         CommandDefinitionCollector definitionCollector = new DefaultCommandDefinitionCollector(config);
 
-        DefaultCommandFilterService filterService = new DefaultCommandFilterService(sessionService, definitionCollector);
+        DefaultCommandFilterService filterService = new DefaultCommandFilterService(definitionCollector);
+        IdenticaAPI.getEventManager().register(filterService);
 
         CommandBlockerListener commandBlocker = new CommandBlockerListener(
                 filterService, identityService, config.getPrefix(), config.getBlockedMessage());
         TabCompleteFilterListener tabFilter = new TabCompleteFilterListener(
-                identityService, sessionService, definitionCollector,
-                IdenticaAPI.getCommandService());
+                filterService, definitionCollector);
 
         getProxy().getPluginManager().registerListener(this, commandBlocker);
         getProxy().getPluginManager().registerListener(this, tabFilter);

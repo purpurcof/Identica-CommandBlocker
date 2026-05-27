@@ -38,6 +38,9 @@ public class CommandBlockerListener implements DynamicListener<CommandExecuteEve
         if (commandLine == null || commandLine.isBlank())
             return;
 
+        if (!commandFilterService.isBlocked(player.getUniqueId()))
+            return;
+
         Identity identity = identityService.findByConnectionUniqueId(player.getUniqueId()).orElse(null);
         if (identity == null)
             return;

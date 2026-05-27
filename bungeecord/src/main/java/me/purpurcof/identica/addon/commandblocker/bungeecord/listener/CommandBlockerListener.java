@@ -45,6 +45,9 @@ public class CommandBlockerListener implements DynamicListener<ChatEvent>, Liste
         if (message == null || message.isBlank())
             return;
 
+        if (!commandFilterService.isBlocked(player.getUniqueId()))
+            return;
+
         Identity identity = identityService.findByConnectionUniqueId(player.getUniqueId()).orElse(null);
         if (identity == null)
             return;

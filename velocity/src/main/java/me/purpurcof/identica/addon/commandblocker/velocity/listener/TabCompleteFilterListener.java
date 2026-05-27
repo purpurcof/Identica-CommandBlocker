@@ -5,9 +5,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.event.command.PlayerAvailableCommandsEvent;
 import com.velocitypowered.api.proxy.Player;
 import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
-import me.whereareiam.identica.identity.IdentityService;
-import me.whereareiam.identica.identity.actor.Identity;
-import me.whereareiam.identica.identity.session.SessionService;
+import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
 import me.whereareiam.identica.listener.DynamicListener;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,21 +13,17 @@ import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 public class TabCompleteFilterListener implements DynamicListener<PlayerAvailableCommandsEvent> {
 
-    private final IdentityService identityService;
-    private final SessionService sessionService;
+    private final CommandFilterService commandFilterService;
     private final CommandDefinitionCollector definitionCollector;
 
     public TabCompleteFilterListener(
-            IdentityService identityService,
-            SessionService sessionService,
+            CommandFilterService commandFilterService,
             CommandDefinitionCollector definitionCollector
     ) {
-        this.identityService = identityService;
-        this.sessionService = sessionService;
+        this.commandFilterService = commandFilterService;
         this.definitionCollector = definitionCollector;
     }
 
@@ -38,8 +32,7 @@ public class TabCompleteFilterListener implements DynamicListener<PlayerAvailabl
         Player player = event.getPlayer();
         if (player == null) return;
 
-        Identity identity = identityService.findByConnectionUniqueId(player.getUniqueId()).orElse(null);
-        if (identity != null && isAuthenticated(identity))
+        if (!commandFilterService.isBlocked(player.getUniqueId()))
             return;
 
         Set<String> allowedAliases = definitionCollector.getAllowedDuringAuthAliases();
@@ -87,11 +80,5 @@ public class TabCompleteFilterListener implements DynamicListener<PlayerAvailabl
             if (entry.getValue() instanceof LiteralCommandNode)
                 filterChildNodes(entry.getValue(), childrenField, allowedNames, allowedAliases, prefix + " " + entry.getKey());
         }
-    }
-
-    private boolean isAuthenticated(Identity identity) {
-        UUID accountUniqueId = identity.getAccountUniqueId();
-        if (accountUniqueId == null) return false;
-        return sessionService.findByUniqueId(accountUniqueId).join().isPresent();
     }
 }

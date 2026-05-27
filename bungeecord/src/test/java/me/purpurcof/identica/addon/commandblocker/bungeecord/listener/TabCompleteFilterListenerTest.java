@@ -1,23 +1,16 @@
 package me.purpurcof.identica.addon.commandblocker.bungeecord.listener;
 
 import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
-import me.whereareiam.identica.command.CommandService;
-import me.whereareiam.identica.identity.IdentityService;
-import me.whereareiam.identica.identity.actor.Identity;
-import me.whereareiam.identica.identity.session.SessionService;
-import me.whereareiam.identica.model.Session;
+import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.TabCompleteEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doReturn;
@@ -26,31 +19,17 @@ import static org.mockito.Mockito.when;
 
 @DisplayName("BungeeCord Tab Complete Filter Listener")
 class TabCompleteFilterListenerTest {
-    private final IdentityService identityService = mock(IdentityService.class);
-    private final SessionService sessionService = mock(SessionService.class);
+    private final CommandFilterService commandFilterService = mock(CommandFilterService.class);
     private final CommandDefinitionCollector definitionCollector = mock(CommandDefinitionCollector.class);
-    private final CommandService commandService = mock(CommandService.class);
-    private final TabCompleteFilterListener listener;
+    private final TabCompleteFilterListener listener = new TabCompleteFilterListener(commandFilterService, definitionCollector);
 
-    TabCompleteFilterListenerTest() {
-        when(commandService.getRegisteredDefinitions()).thenReturn(Collections.emptyMap());
-        listener = new TabCompleteFilterListener(
-                identityService, sessionService, definitionCollector, commandService);
-    }
-
-    @DisplayName("Does not filter for authenticated players")
+    @DisplayName("Does not filter for unblocked players")
     @Test
-    void doesNotFilterForAuthenticatedPlayers() {
+    void doesNotFilterForUnblockedPlayers() {
         UUID playerId = UUID.randomUUID();
-        UUID accountId = UUID.randomUUID();
         ProxiedPlayer player = mock(ProxiedPlayer.class);
         when(player.getUniqueId()).thenReturn(playerId);
-
-        Identity identity = mock(Identity.class);
-        when(identity.getAccountUniqueId()).thenReturn(accountId);
-        when(identityService.findByConnectionUniqueId(playerId)).thenReturn(Optional.of(identity));
-        when(sessionService.findByUniqueId(accountId))
-                .thenReturn(CompletableFuture.completedFuture(Optional.of(mock(Session.class))));
+        when(commandFilterService.isBlocked(playerId)).thenReturn(false);
 
         TabCompleteEvent event = mock(TabCompleteEvent.class);
         when(event.getSender()).thenReturn(player);
@@ -73,14 +52,14 @@ class TabCompleteFilterListenerTest {
         listener.onEvent(event);
     }
 
-    @DisplayName("Filters suggestions when identity is not found")
+    @DisplayName("Filters suggestions for blocked players when identity not found")
     @Test
-    void filtersSuggestionsWhenIdentityNotFound() {
+    void filtersSuggestionsForBlockedPlayers() {
         UUID playerId = UUID.randomUUID();
         ProxiedPlayer player = mock(ProxiedPlayer.class);
         when(player.getUniqueId()).thenReturn(playerId);
+        when(commandFilterService.isBlocked(playerId)).thenReturn(true);
 
-        when(identityService.findByConnectionUniqueId(playerId)).thenReturn(Optional.empty());
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login"));
 
         TabCompleteEvent event = mock(TabCompleteEvent.class);
@@ -93,16 +72,13 @@ class TabCompleteFilterListenerTest {
         assertEquals(List.of("/login"), suggestions);
     }
 
-    @DisplayName("Filters suggestions for unauthenticated players")
+    @DisplayName("Filters suggestions by allowed commands")
     @Test
-    void filtersSuggestionsForUnauthenticatedPlayers() {
+    void filtersSuggestionsByAllowedCommands() {
         UUID playerId = UUID.randomUUID();
         ProxiedPlayer player = mock(ProxiedPlayer.class);
         when(player.getUniqueId()).thenReturn(playerId);
-
-        Identity identity = mock(Identity.class);
-        when(identity.getAccountUniqueId()).thenReturn(null);
-        when(identityService.findByConnectionUniqueId(playerId)).thenReturn(Optional.of(identity));
+        when(commandFilterService.isBlocked(playerId)).thenReturn(true);
 
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login", "auth"));
 
@@ -122,10 +98,7 @@ class TabCompleteFilterListenerTest {
         UUID playerId = UUID.randomUUID();
         ProxiedPlayer player = mock(ProxiedPlayer.class);
         when(player.getUniqueId()).thenReturn(playerId);
-
-        Identity identity = mock(Identity.class);
-        when(identity.getAccountUniqueId()).thenReturn(null);
-        when(identityService.findByConnectionUniqueId(playerId)).thenReturn(Optional.of(identity));
+        when(commandFilterService.isBlocked(playerId)).thenReturn(true);
 
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login"));
 
@@ -145,10 +118,7 @@ class TabCompleteFilterListenerTest {
         UUID playerId = UUID.randomUUID();
         ProxiedPlayer player = mock(ProxiedPlayer.class);
         when(player.getUniqueId()).thenReturn(playerId);
-
-        Identity identity = mock(Identity.class);
-        when(identity.getAccountUniqueId()).thenReturn(null);
-        when(identityService.findByConnectionUniqueId(playerId)).thenReturn(Optional.of(identity));
+        when(commandFilterService.isBlocked(playerId)).thenReturn(true);
 
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("credential confirm", "credential cancel"));
 
@@ -168,10 +138,7 @@ class TabCompleteFilterListenerTest {
         UUID playerId = UUID.randomUUID();
         ProxiedPlayer player = mock(ProxiedPlayer.class);
         when(player.getUniqueId()).thenReturn(playerId);
-
-        Identity identity = mock(Identity.class);
-        when(identity.getAccountUniqueId()).thenReturn(null);
-        when(identityService.findByConnectionUniqueId(playerId)).thenReturn(Optional.of(identity));
+        when(commandFilterService.isBlocked(playerId)).thenReturn(true);
 
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login"));
 

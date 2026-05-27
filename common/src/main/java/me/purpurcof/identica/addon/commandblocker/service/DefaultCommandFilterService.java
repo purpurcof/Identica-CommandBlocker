@@ -1,20 +1,28 @@
 package me.purpurcof.identica.addon.commandblocker.service;
 
 import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
+import me.whereareiam.identica.event.EventListener;
+import me.whereareiam.identica.event.base.IdenticEvent;
+import me.whereareiam.identica.event.scenario.authentication.AuthenticationRequiredEvent;
+import me.whereareiam.identica.event.scenario.authentication.AuthenticationResolvedEvent;
+import me.whereareiam.identica.event.scenario.registration.RegistrationRequiredEvent;
+import me.whereareiam.identica.event.scenario.registration.RegistrationResolvedEvent;
+import me.whereareiam.identica.event.scenario.migration.MigrationRequiredEvent;
+import me.whereareiam.identica.event.scenario.migration.MigrationResolvedEvent;
 import me.whereareiam.identica.identity.actor.Identity;
-import me.whereareiam.identica.identity.session.SessionService;
 import me.whereareiam.keystone.Actor;
 import org.jetbrains.annotations.NotNull;
+
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class DefaultCommandFilterService implements CommandFilterService {
+public class DefaultCommandFilterService implements CommandFilterService, EventListener {
 
-    private final SessionService sessionService;
     private final CommandDefinitionCollector definitionCollector;
+    private final Set<UUID> blockedConnections = ConcurrentHashMap.newKeySet();
 
-    public DefaultCommandFilterService(SessionService sessionService, CommandDefinitionCollector definitionCollector) {
-        this.sessionService = sessionService;
+    public DefaultCommandFilterService(CommandDefinitionCollector definitionCollector) {
         this.definitionCollector = definitionCollector;
     }
 
@@ -26,14 +34,46 @@ public class DefaultCommandFilterService implements CommandFilterService {
         if (!(actor instanceof Identity identity))
             return true;
 
-        UUID accountUniqueId = identity.getAccountUniqueId();
-        if (accountUniqueId == null)
-            return isAllowedCommand(commandLine);
+        UUID connectionUniqueId = identity.getConnectionUniqueId();
+        if (connectionUniqueId == null || !blockedConnections.contains(connectionUniqueId))
+            return true;
 
-        return sessionService.findByUniqueId(accountUniqueId)
-                .join()
-                .map(session -> true)
-                .orElseGet(() -> isAllowedCommand(commandLine));
+        return isAllowedCommand(commandLine);
+    }
+
+    @Override
+    public boolean isBlocked(@NotNull UUID connectionUniqueId) {
+        return blockedConnections.contains(connectionUniqueId);
+    }
+
+    @IdenticEvent
+    public void onAuthenticationRequired(AuthenticationRequiredEvent event) {
+        blockedConnections.add(event.getConnectionUniqueId());
+    }
+
+    @IdenticEvent
+    public void onAuthenticationResolved(AuthenticationResolvedEvent event) {
+        blockedConnections.remove(event.getConnectionUniqueId());
+    }
+
+    @IdenticEvent
+    public void onRegistrationRequired(RegistrationRequiredEvent event) {
+        blockedConnections.add(event.getConnectionUniqueId());
+    }
+
+    @IdenticEvent
+    public void onRegistrationResolved(RegistrationResolvedEvent event) {
+        blockedConnections.remove(event.getConnectionUniqueId());
+    }
+
+    @IdenticEvent
+    public void onMigrationRequired(MigrationRequiredEvent event) {
+        blockedConnections.add(event.getConnectionUniqueId());
+    }
+
+    @IdenticEvent
+    public void onMigrationResolved(MigrationResolvedEvent event) {
+        blockedConnections.remove(event.getConnectionUniqueId());
     }
 
     private boolean isAllowedCommand(String commandLine) {

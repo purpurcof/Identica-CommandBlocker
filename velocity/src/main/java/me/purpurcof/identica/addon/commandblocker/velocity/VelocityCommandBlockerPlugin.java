@@ -2,7 +2,6 @@ package me.purpurcof.identica.addon.commandblocker.velocity;
 
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.EventManager;
-import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.command.PlayerAvailableCommandsEvent;
 import com.velocitypowered.api.event.command.CommandExecuteEvent;
@@ -20,7 +19,6 @@ import me.purpurcof.identica.addon.commandblocker.velocity.listener.TabCompleteF
 import me.whereareiam.identica.IdenticaAPI;
 import me.whereareiam.identica.config.ConfigurationTypeResolver;
 import me.whereareiam.identica.identity.IdentityService;
-import me.whereareiam.identica.identity.session.SessionService;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
@@ -32,7 +30,7 @@ import java.nio.file.Path;
         description = "Blocks commands during authentication",
         authors = {"purpurcof"},
         dependencies = {
-                @Dependency(id = "identica", optional = false)
+                @Dependency(id = "identica")
         }
 )
 public class VelocityCommandBlockerPlugin {
@@ -62,18 +60,18 @@ public class VelocityCommandBlockerPlugin {
         ConfigurationTypeResolver typeResolver = IdenticaAPI.getService(ConfigurationTypeResolver.class);
         CommandBlockerConfiguration config = new CommandBlockerConfiguration(dataDirectory, typeResolver);
         IdentityService identityService = IdenticaAPI.getPresenceService();
-        SessionService sessionService = IdenticaAPI.getSessionService();
         CommandDefinitionCollector definitionCollector = new DefaultCommandDefinitionCollector(config);
 
-        DefaultCommandFilterService filterService = new DefaultCommandFilterService(sessionService, definitionCollector);
+        DefaultCommandFilterService filterService = new DefaultCommandFilterService(definitionCollector);
+        IdenticaAPI.getEventManager().register(filterService);
 
         CommandBlockerListener commandBlocker = new CommandBlockerListener(
                 filterService, identityService, config.getPrefix(), config.getBlockedMessage());
-        eventManager.register(this, CommandExecuteEvent.class, PostOrder.LATE, commandBlocker::onEvent);
+        eventManager.register(this, CommandExecuteEvent.class, (short) 1, commandBlocker::onEvent);
 
         TabCompleteFilterListener tabFilter = new TabCompleteFilterListener(
-                identityService, sessionService, definitionCollector);
-        eventManager.register(this, PlayerAvailableCommandsEvent.class, PostOrder.LATE, tabFilter::onEvent);
+                filterService, definitionCollector);
+        eventManager.register(this, PlayerAvailableCommandsEvent.class, (short) 1, tabFilter::onEvent);
 
         logger.info("Identica-CommandBlocker initialized");
     }
