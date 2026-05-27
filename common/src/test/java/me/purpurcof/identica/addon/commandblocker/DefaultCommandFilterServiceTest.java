@@ -5,22 +5,41 @@ import me.purpurcof.identica.addon.commandblocker.service.DefaultCommandFilterSe
 import me.whereareiam.identica.event.scenario.authentication.AuthenticationRequiredEvent;
 import me.whereareiam.identica.event.scenario.authentication.AuthenticationResolvedEvent;
 import me.whereareiam.identica.identity.actor.Identity;
+import me.whereareiam.identica.replication.cache.base.Cache;
 import me.whereareiam.keystone.Actor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @DisplayName("Default Command Filter Service")
 class DefaultCommandFilterServiceTest {
     private final CommandDefinitionCollector definitionCollector = mock(CommandDefinitionCollector.class);
-    private final DefaultCommandFilterService service = new DefaultCommandFilterService(definitionCollector);
+
+    @SuppressWarnings("unchecked")
+    private final Cache<String> blockedCache = (Cache<String>) mock(Cache.class);
+
+    private final DefaultCommandFilterService service = new DefaultCommandFilterService(definitionCollector, blockedCache);
+
+    @BeforeEach
+    void setUp() {
+        when(blockedCache.get(any())).thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+        when(blockedCache.put(any(), any(), anyLong())).thenReturn(CompletableFuture.completedFuture(null));
+        when(blockedCache.invalidate(any())).thenReturn(CompletableFuture.completedFuture(null));
+    }
 
     private static AuthenticationRequiredEvent authRequired(UUID connectionId) {
         AuthenticationRequiredEvent event = mock(AuthenticationRequiredEvent.class);
@@ -42,7 +61,7 @@ class DefaultCommandFilterServiceTest {
         assertTrue(service.isAllowed(console, "/somecommand"));
     }
 
-    @DisplayName("Allows identity not in blocked set")
+    @DisplayName("Allows identity not in blocked cache")
     @Test
     void allowsIdentityNotBlocked() {
         Identity identity = mock(Identity.class);
@@ -58,6 +77,8 @@ class DefaultCommandFilterServiceTest {
         Identity identity = mock(Identity.class);
         when(identity.getConnectionUniqueId()).thenReturn(connectionId);
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login"));
+        when(blockedCache.get(eq(connectionId.toString())))
+                .thenReturn(CompletableFuture.completedFuture(Optional.of("1")));
 
         service.onAuthenticationRequired(authRequired(connectionId));
 
@@ -71,6 +92,8 @@ class DefaultCommandFilterServiceTest {
         Identity identity = mock(Identity.class);
         when(identity.getConnectionUniqueId()).thenReturn(connectionId);
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of());
+        when(blockedCache.get(eq(connectionId.toString())))
+                .thenReturn(CompletableFuture.completedFuture(Optional.of("1")));
 
         service.onAuthenticationRequired(authRequired(connectionId));
 
@@ -85,6 +108,7 @@ class DefaultCommandFilterServiceTest {
         when(identity.getConnectionUniqueId()).thenReturn(connectionId);
 
         service.onAuthenticationRequired(authRequired(connectionId));
+        // After invalidation, get returns empty
         service.onAuthenticationResolved(authResolved(connectionId));
 
         assertTrue(service.isAllowed(identity, "/tp"));
@@ -97,10 +121,12 @@ class DefaultCommandFilterServiceTest {
 
         assertFalse(service.isBlocked(connectionId));
 
-        service.onAuthenticationRequired(authRequired(connectionId));
+        when(blockedCache.get(eq(connectionId.toString())))
+                .thenReturn(CompletableFuture.completedFuture(Optional.of("1")));
         assertTrue(service.isBlocked(connectionId));
 
-        service.onAuthenticationResolved(authResolved(connectionId));
+        when(blockedCache.get(eq(connectionId.toString())))
+                .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
         assertFalse(service.isBlocked(connectionId));
     }
 
@@ -110,8 +136,8 @@ class DefaultCommandFilterServiceTest {
         UUID connectionId = UUID.randomUUID();
         Identity identity = mock(Identity.class);
         when(identity.getConnectionUniqueId()).thenReturn(connectionId);
-
-        service.onAuthenticationRequired(authRequired(connectionId));
+        when(blockedCache.get(eq(connectionId.toString())))
+                .thenReturn(CompletableFuture.completedFuture(Optional.of("1")));
 
         assertFalse(service.isAllowed(identity, ""));
         assertFalse(service.isAllowed(identity, " "));
@@ -124,5 +150,25 @@ class DefaultCommandFilterServiceTest {
         when(identity.getConnectionUniqueId()).thenReturn(null);
 
         assertTrue(service.isAllowed(identity, "/anycommand"));
+    }
+
+    @DisplayName("Puts connectionId into cache on AuthenticationRequired")
+    @Test
+    void putsOnAuthenticationRequired() {
+        UUID connectionId = UUID.randomUUID();
+
+        service.onAuthenticationRequired(authRequired(connectionId));
+
+        verify(blockedCache).put(eq(connectionId.toString()), eq("1"), anyLong());
+    }
+
+    @DisplayName("Invalidates connectionId on AuthenticationResolved")
+    @Test
+    void invalidatesOnAuthenticationResolved() {
+        UUID connectionId = UUID.randomUUID();
+
+        service.onAuthenticationResolved(authResolved(connectionId));
+
+        verify(blockedCache).invalidate(eq(connectionId.toString()));
     }
 }

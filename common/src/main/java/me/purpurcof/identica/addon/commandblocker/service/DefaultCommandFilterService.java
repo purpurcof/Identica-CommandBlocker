@@ -10,20 +10,23 @@ import me.whereareiam.identica.event.scenario.registration.RegistrationResolvedE
 import me.whereareiam.identica.event.scenario.migration.MigrationRequiredEvent;
 import me.whereareiam.identica.event.scenario.migration.MigrationResolvedEvent;
 import me.whereareiam.identica.identity.actor.Identity;
+import me.whereareiam.identica.replication.cache.base.Cache;
 import me.whereareiam.keystone.Actor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultCommandFilterService implements CommandFilterService, EventListener {
 
-    private final CommandDefinitionCollector definitionCollector;
-    private final Set<UUID> blockedConnections = ConcurrentHashMap.newKeySet();
+    private static final long DEFAULT_TTL_MS = 300_000;
 
-    public DefaultCommandFilterService(CommandDefinitionCollector definitionCollector) {
+    private final CommandDefinitionCollector definitionCollector;
+    private final Cache<String> blockedCache;
+
+    public DefaultCommandFilterService(CommandDefinitionCollector definitionCollector, Cache<String> blockedCache) {
         this.definitionCollector = definitionCollector;
+        this.blockedCache = blockedCache;
     }
 
     @Override
@@ -35,7 +38,7 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
             return true;
 
         UUID connectionUniqueId = identity.getConnectionUniqueId();
-        if (connectionUniqueId == null || !blockedConnections.contains(connectionUniqueId))
+        if (connectionUniqueId == null || !isBlocked(connectionUniqueId))
             return true;
 
         return isAllowedCommand(commandLine);
@@ -43,37 +46,37 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
 
     @Override
     public boolean isBlocked(@NotNull UUID connectionUniqueId) {
-        return blockedConnections.contains(connectionUniqueId);
+        return blockedCache.get(connectionUniqueId.toString()).join().isPresent();
     }
 
     @IdenticEvent
     public void onAuthenticationRequired(AuthenticationRequiredEvent event) {
-        blockedConnections.add(event.getConnectionUniqueId());
+        blockedCache.put(event.getConnectionUniqueId().toString(), "1", DEFAULT_TTL_MS);
     }
 
     @IdenticEvent
     public void onAuthenticationResolved(AuthenticationResolvedEvent event) {
-        blockedConnections.remove(event.getConnectionUniqueId());
+        blockedCache.invalidate(event.getConnectionUniqueId().toString());
     }
 
     @IdenticEvent
     public void onRegistrationRequired(RegistrationRequiredEvent event) {
-        blockedConnections.add(event.getConnectionUniqueId());
+        blockedCache.put(event.getConnectionUniqueId().toString(), "1", DEFAULT_TTL_MS);
     }
 
     @IdenticEvent
     public void onRegistrationResolved(RegistrationResolvedEvent event) {
-        blockedConnections.remove(event.getConnectionUniqueId());
+        blockedCache.invalidate(event.getConnectionUniqueId().toString());
     }
 
     @IdenticEvent
     public void onMigrationRequired(MigrationRequiredEvent event) {
-        blockedConnections.add(event.getConnectionUniqueId());
+        blockedCache.put(event.getConnectionUniqueId().toString(), "1", DEFAULT_TTL_MS);
     }
 
     @IdenticEvent
     public void onMigrationResolved(MigrationResolvedEvent event) {
-        blockedConnections.remove(event.getConnectionUniqueId());
+        blockedCache.invalidate(event.getConnectionUniqueId().toString());
     }
 
     private boolean isAllowedCommand(String commandLine) {

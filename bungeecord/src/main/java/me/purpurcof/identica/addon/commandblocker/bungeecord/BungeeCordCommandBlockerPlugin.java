@@ -9,6 +9,9 @@ import me.purpurcof.identica.addon.commandblocker.bungeecord.listener.TabComplet
 import me.whereareiam.identica.IdenticaAPI;
 import me.whereareiam.identica.config.ConfigurationTypeResolver;
 import me.whereareiam.identica.identity.IdentityService;
+import me.whereareiam.identica.model.replication.ReplicationType;
+import me.whereareiam.identica.replication.ReplicationSystem;
+import me.whereareiam.identica.replication.cache.ReplicatedCache;
 import net.md_5.bungee.api.plugin.Plugin;
 
 public class BungeeCordCommandBlockerPlugin extends Plugin {
@@ -26,7 +29,12 @@ public class BungeeCordCommandBlockerPlugin extends Plugin {
         IdentityService identityService = IdenticaAPI.getPresenceService();
         CommandDefinitionCollector definitionCollector = new DefaultCommandDefinitionCollector(config);
 
-        DefaultCommandFilterService filterService = new DefaultCommandFilterService(definitionCollector);
+        ReplicationSystem replicationSystem = IdenticaAPI.getReplicationSystem();
+        ReplicatedCache<String> blockedCache = replicationSystem
+                .cache("commandblocker:blocked")
+                .defaultTtl(300_000)
+                .replicated(ReplicationType.identity(String.class));
+        DefaultCommandFilterService filterService = new DefaultCommandFilterService(definitionCollector, blockedCache);
         IdenticaAPI.getEventManager().register(filterService);
 
         CommandBlockerListener commandBlocker = new CommandBlockerListener(
