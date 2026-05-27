@@ -8,6 +8,8 @@ import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCol
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
 import me.whereareiam.identica.listener.DynamicListener;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -15,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class TabCompleteFilterListener implements DynamicListener<PlayerAvailableCommandsEvent> {
+
+    private static final Logger logger = LoggerFactory.getLogger(TabCompleteFilterListener.class);
 
     private final CommandFilterService commandFilterService;
     private final CommandDefinitionCollector definitionCollector;
@@ -51,7 +55,8 @@ public class TabCompleteFilterListener implements DynamicListener<PlayerAvailabl
             for (Map.Entry<String, CommandNode<?>> entry : rootChildren.entrySet()) {
                 filterChildNodes(entry.getValue(), childrenField, allowedNames, allowedAliases, entry.getKey());
             }
-        } catch (NoSuchFieldException | IllegalAccessException ignored) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            logger.warn("Failed to filter tab complete commands", e);
         }
     }
 
