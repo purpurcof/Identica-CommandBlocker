@@ -15,5 +15,5 @@ Addon-plugin for [Identica](https://github.com/whereareiam/Identica) that blocks
 
 # Requirements
 
-* Identica 2.2.0+
+* Identica 3.0.0+
 * Velocity, BungeeCord
