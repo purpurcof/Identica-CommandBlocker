@@ -46,4 +46,9 @@ public class BungeeCordCommandBlockerPlugin extends Plugin {
         getProxy().getPluginManager().registerListener(this, tabFilter);
         getLogger().info("Identica-CommandBlocker enabled");
     }
+
+    @Override
+    public void onDisable() {
+        getLogger().info("Identica-CommandBlocker shutting down");
+    }
 }
