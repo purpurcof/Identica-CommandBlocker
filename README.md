@@ -2,14 +2,19 @@
 
 # Identica-CommandBlocker
 
-![build](https://img.shields.io/github/actions/workflow/status/purpurcof/Identica-CommandBlocker/build.yml?branch=dev)
-![version](https://img.shields.io/github/v/release/purpurcof/Identica-CommandBlocker)
-
 Addon-plugin for [Identica](https://github.com/whereareiam/Identica) that blocks commands during authentication.
 
 </div>
 
 ---
+
+### Information
+
+![build](https://img.shields.io/github/actions/workflow/status/purpurcof/Identica-CommandBlocker/build.yml?branch=dev)
+![version](https://img.shields.io/github/v/release/purpurcof/Identica-CommandBlocker)
+
+[![GitHub Downloads](https://img.shields.io/github/downloads/purpurcof/Identica-CommandBlocker/total?&label=GitHub%20Downloads)](https://github.com/purpurcof/Identica-CommandBlocker/releases)
+[![Modrinth Downloads](https://img.shields.io/modrinth/dt/Aw2QcPSW?&label=Modrinth%20Downloads)](https://modrinth.com/plugin/Aw2QcPSW)
 
 ### Requirements
 
