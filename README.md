@@ -1,7 +1,9 @@
 # Identica-CommandBlocker
 
-![build](https://img.shields.io/github/actions/workflow/status/purpurcof/Identica-CommandBlocker/build.yml?branch=dev)
-![version](https://img.shields.io/github/v/release/purpurcof/Identica-CommandBlocker)
+<p align="left">
+  <img src="https://shields.io" alt="build">
+  <img src="https://shields.io" alt="version">
+</p>
 
 <br>
 
