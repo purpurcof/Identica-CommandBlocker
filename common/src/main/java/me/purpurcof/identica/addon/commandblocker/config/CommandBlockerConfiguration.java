@@ -1,6 +1,7 @@
 package me.purpurcof.identica.addon.commandblocker.config;
 
 import me.whereareiam.configura.Config;
+import me.whereareiam.configura.Configura;
 import me.whereareiam.configura.type.Format;
 import me.whereareiam.identica.config.ConfigurationTypeResolver;
 
@@ -9,7 +10,7 @@ import java.util.Set;
 
 public class CommandBlockerConfiguration {
 
-    private final Config config;
+    private final Configura config;
     private final Path path;
     private CommandBlockerConfig data;
 

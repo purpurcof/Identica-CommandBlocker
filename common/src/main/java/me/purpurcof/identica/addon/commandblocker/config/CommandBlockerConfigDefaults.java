@@ -1,10 +1,10 @@
 package me.purpurcof.identica.addon.commandblocker.config;
 
-import me.whereareiam.configura.merge.defaults.MergeDefaultsProvider;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 
 import java.util.List;
 
-public class CommandBlockerConfigDefaults implements MergeDefaultsProvider<CommandBlockerConfig> {
+public class CommandBlockerConfigDefaults implements DefaultsProvider<CommandBlockerConfig> {
 
     @Override
     public CommandBlockerConfig supply(CommandBlockerConfig config) {
