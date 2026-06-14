@@ -1,17 +1,17 @@
 [versions]
-identica = "dev-7d26f0a"
-configura = "dev-6b221cb"
-keystone = "dev-90d39d2"
+identica = "dev-e605d1b"
+configura = "dev-43bc95a"
+keystone = "dev-790a33e"
 guice = "7.0.0"
-annotations = "26.0.1"
-adventure = "4.25.0"
+annotations = "26.1.0"
+adventure = "5.1.1"
 bungeecord = "26.1-R0.1-SNAPSHOT"
 velocity = "3.5.0-SNAPSHOT"
-junit = "5.12.2"
-junit-platform = "1.12.2"
-mockito = "5.20.0"
-attache = "dev-5e11e1c"
-shadow = "9.3.0"
+junit = "5.14.4"
+junit-platform = "1.14.4"
+mockito = "5.23.0"
+attache = "dev-58f53b4"
+shadow = "9.4.2"
 
 [libraries]
 identica-api = { group = "me.whereareiam.identica", name = "api", version.ref = "identica" }
