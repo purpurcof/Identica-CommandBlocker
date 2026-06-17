@@ -55,7 +55,7 @@ class TabCompleteFilterListenerTest {
         when(player.getUniqueId()).thenReturn(playerId);
         when(commandFilterService.isBlocked(playerId)).thenReturn(true);
 
-        when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login"));
+        when(definitionCollector.getAllowedDuringAuthCommandNames()).thenReturn(Set.of("login"));
 
         RootCommandNode<?> rootNode = root();
         addChild(rootNode, "login");
@@ -81,7 +81,7 @@ class TabCompleteFilterListenerTest {
         when(player.getUniqueId()).thenReturn(playerId);
         when(commandFilterService.isBlocked(playerId)).thenReturn(true);
 
-        when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login", "auth"));
+        when(definitionCollector.getAllowedDuringAuthCommandNames()).thenReturn(Set.of("login", "auth"));
 
         RootCommandNode<?> rootNode = root();
         addChild(rootNode, "login");

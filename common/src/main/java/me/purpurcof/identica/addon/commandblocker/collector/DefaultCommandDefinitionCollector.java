@@ -3,23 +3,43 @@ package me.purpurcof.identica.addon.commandblocker.collector;
 import me.purpurcof.identica.addon.commandblocker.config.CommandBlockerConfiguration;
 import me.whereareiam.identica.Reloadable;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 public class DefaultCommandDefinitionCollector implements CommandDefinitionCollector, Reloadable {
 
     private final CommandBlockerConfiguration config;
+    private volatile Set<String> cachedAliases = Collections.emptySet();
+    private volatile Set<String> cachedCommandNames = Collections.emptySet();
 
     public DefaultCommandDefinitionCollector(CommandBlockerConfiguration config) {
         this.config = config;
+        reload();
     }
 
     @Override
     public Set<String> getAllowedDuringAuthAliases() {
-        return config.getAllowedCommands();
+        return cachedAliases;
+    }
+
+    public Set<String> getAllowedDuringAuthCommandNames() {
+        return cachedCommandNames;
     }
 
     @Override
     public void reload() {
         config.reload();
+        this.cachedAliases = Set.copyOf(config.getAllowedCommands());
+        this.cachedCommandNames = extractCommandNames(cachedAliases);
+    }
+
+    private static Set<String> extractCommandNames(Set<String> aliases) {
+        Set<String> names = new HashSet<>();
+        for (String alias : aliases) {
+            int spaceIndex = alias.indexOf(' ');
+            names.add(spaceIndex > 0 ? alias.substring(0, spaceIndex) : alias);
+        }
+        return Collections.unmodifiableSet(names);
     }
 }

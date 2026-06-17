@@ -34,7 +34,7 @@ public class TabCompleteFilterListener implements DynamicListener<TabCompleteEve
         if (!commandFilterService.isBlocked(player.getUniqueId()))
             return;
 
-        Set<String> allowedAliases = definitionCollector.getAllowedDuringAuthAliases();
+        Set<String> allowedNames = definitionCollector.getAllowedDuringAuthCommandNames();
 
         event.getSuggestions().removeIf(suggestion -> {
             if (suggestion == null || suggestion.isBlank())
@@ -43,32 +43,7 @@ public class TabCompleteFilterListener implements DynamicListener<TabCompleteEve
             String trimmed = suggestion.startsWith("/") ? suggestion.substring(1) : suggestion;
             int spaceIndex = trimmed.indexOf(' ');
             String firstWord = spaceIndex > 0 ? trimmed.substring(0, spaceIndex) : trimmed;
-
-            if (allowedAliases.contains(firstWord)) {
-                if (spaceIndex < 0)
-                    return false;
-
-                String remaining = trimmed.substring(firstWord.length()).trim();
-                if (remaining.isEmpty())
-                    return false;
-
-                if (allowedAliases.contains(remaining) || allowedAliases.contains(trimmed))
-                    return false;
-
-                for (String alias : allowedAliases) {
-                    if (alias.equals(remaining) || alias.startsWith(remaining + " ") || remaining.startsWith(alias + " "))
-                        return true;
-                }
-
-                return false;
-            }
-
-            for (String alias : allowedAliases) {
-                if (alias.startsWith(firstWord + " "))
-                    return false;
-            }
-
-            return true;
+            return !allowedNames.contains(firstWord);
         });
     }
 }

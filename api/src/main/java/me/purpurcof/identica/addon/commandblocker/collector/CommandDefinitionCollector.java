@@ -5,4 +5,6 @@ import java.util.Set;
 public interface CommandDefinitionCollector {
 
     Set<String> getAllowedDuringAuthAliases();
+
+    Set<String> getAllowedDuringAuthCommandNames();
 }
