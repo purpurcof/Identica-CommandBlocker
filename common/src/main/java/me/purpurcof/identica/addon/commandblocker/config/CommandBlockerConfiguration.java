@@ -6,6 +6,7 @@ import me.whereareiam.configura.type.Format;
 import me.whereareiam.identica.config.ConfigurationTypeResolver;
 
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Set;
 
 public class CommandBlockerConfiguration {
@@ -41,7 +42,7 @@ public class CommandBlockerConfiguration {
     }
 
     public Set<String> getAllowedCommands() {
-        return data.getAllowedCommands();
+        return new HashSet<>(data.getAllowedCommands());
     }
 
     public String getBlockedMessage() {
