@@ -13,6 +13,7 @@ import me.whereareiam.identica.model.replication.ReplicationType;
 import me.whereareiam.identica.replication.ReplicationSystem;
 import me.whereareiam.identica.replication.cache.ReplicatedCache;
 import net.md_5.bungee.api.plugin.Plugin;
+import java.util.UUID;
 
 public class BungeeCordCommandBlockerPlugin extends Plugin {
 
@@ -30,10 +31,10 @@ public class BungeeCordCommandBlockerPlugin extends Plugin {
         CommandDefinitionCollector definitionCollector = new DefaultCommandDefinitionCollector(config);
 
         ReplicationSystem replicationSystem = IdenticaAPI.getReplicationSystem();
-        ReplicatedCache<String> blockedCache = replicationSystem
+        ReplicatedCache<UUID> blockedCache = replicationSystem
                 .cache("commandblocker:blocked")
                 .defaultTtl(300_000)
-                .replicated(ReplicationType.identity(String.class));
+                .replicated(ReplicationType.identity(UUID.class));
         DefaultCommandFilterService filterService = new DefaultCommandFilterService(definitionCollector, blockedCache);
         IdenticaAPI.getEventManager().register(filterService);
 

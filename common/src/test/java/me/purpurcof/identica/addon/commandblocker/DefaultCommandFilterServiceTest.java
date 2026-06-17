@@ -5,7 +5,7 @@ import me.purpurcof.identica.addon.commandblocker.service.DefaultCommandFilterSe
 import me.whereareiam.identica.event.scenario.authentication.AuthenticationRequiredEvent;
 import me.whereareiam.identica.event.scenario.authentication.AuthenticationResolvedEvent;
 import me.whereareiam.identica.identity.actor.Identity;
-import me.whereareiam.identica.replication.cache.base.Cache;
+import me.whereareiam.identica.replication.cache.ReplicatedCache;
 import me.whereareiam.keystone.Actor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,7 +30,7 @@ class DefaultCommandFilterServiceTest {
     private final CommandDefinitionCollector definitionCollector = mock(CommandDefinitionCollector.class);
 
     @SuppressWarnings("unchecked")
-    private final Cache<String> blockedCache = (Cache<String>) mock(Cache.class);
+    private final ReplicatedCache<UUID> blockedCache = (ReplicatedCache<UUID>) mock(ReplicatedCache.class);
 
     private final DefaultCommandFilterService service = new DefaultCommandFilterService(definitionCollector, blockedCache);
 
@@ -78,7 +78,7 @@ class DefaultCommandFilterServiceTest {
         when(identity.getConnectionUniqueId()).thenReturn(connectionId);
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login"));
         when(blockedCache.get(eq(connectionId.toString())))
-                .thenReturn(CompletableFuture.completedFuture(Optional.of("1")));
+                .thenReturn(CompletableFuture.completedFuture(Optional.of(connectionId)));
 
         service.onAuthenticationRequired(authRequired(connectionId));
 
@@ -93,7 +93,7 @@ class DefaultCommandFilterServiceTest {
         when(identity.getConnectionUniqueId()).thenReturn(connectionId);
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of());
         when(blockedCache.get(eq(connectionId.toString())))
-                .thenReturn(CompletableFuture.completedFuture(Optional.of("1")));
+                .thenReturn(CompletableFuture.completedFuture(Optional.of(connectionId)));
 
         service.onAuthenticationRequired(authRequired(connectionId));
 
@@ -122,7 +122,7 @@ class DefaultCommandFilterServiceTest {
         assertFalse(service.isBlocked(connectionId));
 
         when(blockedCache.get(eq(connectionId.toString())))
-                .thenReturn(CompletableFuture.completedFuture(Optional.of("1")));
+                .thenReturn(CompletableFuture.completedFuture(Optional.of(connectionId)));
         assertTrue(service.isBlocked(connectionId));
 
         when(blockedCache.get(eq(connectionId.toString())))
@@ -137,7 +137,7 @@ class DefaultCommandFilterServiceTest {
         Identity identity = mock(Identity.class);
         when(identity.getConnectionUniqueId()).thenReturn(connectionId);
         when(blockedCache.get(eq(connectionId.toString())))
-                .thenReturn(CompletableFuture.completedFuture(Optional.of("1")));
+                .thenReturn(CompletableFuture.completedFuture(Optional.of(connectionId)));
 
         assertFalse(service.isAllowed(identity, ""));
         assertFalse(service.isAllowed(identity, " "));
@@ -159,7 +159,7 @@ class DefaultCommandFilterServiceTest {
 
         service.onAuthenticationRequired(authRequired(connectionId));
 
-        verify(blockedCache).put(eq(connectionId.toString()), eq("1"), anyLong());
+        verify(blockedCache).put(eq(connectionId.toString()), eq(connectionId), anyLong());
     }
 
     @DisplayName("Invalidates connectionId on AuthenticationResolved")

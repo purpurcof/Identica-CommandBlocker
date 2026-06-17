@@ -10,7 +10,7 @@ import me.whereareiam.identica.event.scenario.registration.RegistrationResolvedE
 import me.whereareiam.identica.event.scenario.migration.MigrationRequiredEvent;
 import me.whereareiam.identica.event.scenario.migration.MigrationResolvedEvent;
 import me.whereareiam.identica.identity.actor.Identity;
-import me.whereareiam.identica.replication.cache.base.Cache;
+import me.whereareiam.identica.replication.cache.ReplicatedCache;
 import me.whereareiam.keystone.Actor;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,9 +22,9 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
     private static final long DEFAULT_TTL_MS = 300_000;
 
     private final CommandDefinitionCollector definitionCollector;
-    private final Cache<String> blockedCache;
+    private final ReplicatedCache<UUID> blockedCache;
 
-    public DefaultCommandFilterService(CommandDefinitionCollector definitionCollector, Cache<String> blockedCache) {
+    public DefaultCommandFilterService(CommandDefinitionCollector definitionCollector, ReplicatedCache<UUID> blockedCache) {
         this.definitionCollector = definitionCollector;
         this.blockedCache = blockedCache;
     }
@@ -51,32 +51,38 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
 
     @IdenticEvent
     public void onAuthenticationRequired(AuthenticationRequiredEvent event) {
-        blockedCache.put(event.getConnectionUniqueId().toString(), "1", DEFAULT_TTL_MS);
+        UUID connectionId = event.getConnectionUniqueId();
+        blockedCache.put(connectionId.toString(), connectionId, DEFAULT_TTL_MS);
     }
 
     @IdenticEvent
     public void onAuthenticationResolved(AuthenticationResolvedEvent event) {
-        blockedCache.invalidate(event.getConnectionUniqueId().toString());
+        UUID connectionId = event.getConnectionUniqueId();
+        blockedCache.invalidate(connectionId.toString());
     }
 
     @IdenticEvent
     public void onRegistrationRequired(RegistrationRequiredEvent event) {
-        blockedCache.put(event.getConnectionUniqueId().toString(), "1", DEFAULT_TTL_MS);
+        UUID connectionId = event.getConnectionUniqueId();
+        blockedCache.put(connectionId.toString(), connectionId, DEFAULT_TTL_MS);
     }
 
     @IdenticEvent
     public void onRegistrationResolved(RegistrationResolvedEvent event) {
-        blockedCache.invalidate(event.getConnectionUniqueId().toString());
+        UUID connectionId = event.getConnectionUniqueId();
+        blockedCache.invalidate(connectionId.toString());
     }
 
     @IdenticEvent
     public void onMigrationRequired(MigrationRequiredEvent event) {
-        blockedCache.put(event.getConnectionUniqueId().toString(), "1", DEFAULT_TTL_MS);
+        UUID connectionId = event.getConnectionUniqueId();
+        blockedCache.put(connectionId.toString(), connectionId, DEFAULT_TTL_MS);
     }
 
     @IdenticEvent
     public void onMigrationResolved(MigrationResolvedEvent event) {
-        blockedCache.invalidate(event.getConnectionUniqueId().toString());
+        UUID connectionId = event.getConnectionUniqueId();
+        blockedCache.invalidate(connectionId.toString());
     }
 
     private boolean isAllowedCommand(String commandLine) {
