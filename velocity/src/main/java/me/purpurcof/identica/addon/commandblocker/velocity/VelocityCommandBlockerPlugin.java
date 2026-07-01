@@ -30,7 +30,7 @@ import java.util.UUID;
 @Plugin(
         id = "identica-commandblocker",
         name = "Identica-CommandBlocker",
-        version = "1.3.0",
+        version = "1.4.0",
         description = "Blocks commands during authentication",
         authors = {"purpurcof"},
         dependencies = {
