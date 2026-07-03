@@ -15,12 +15,18 @@ import me.whereareiam.keystone.Actor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DefaultCommandFilterService implements CommandFilterService, EventListener {
 
     private static final long DEFAULT_TTL_MS = 300_000;
+    private static final long CACHE_GET_TIMEOUT_MS = 250;
+    private static final Logger LOGGER = Logger.getLogger(DefaultCommandFilterService.class.getName());
 
     private final CommandDefinitionCollector definitionCollector;
     private final ReplicatedCache<UUID> blockedCache;
@@ -47,7 +53,19 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
 
     @Override
     public boolean isBlocked(@NotNull UUID connectionUniqueId) {
-        return blockedCache.get(connectionUniqueId.toString()).join().isPresent();
+        try {
+            Optional<UUID> result = blockedCache.get(connectionUniqueId.toString())
+                    .completeOnTimeout(Optional.empty(), CACHE_GET_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+                    .exceptionally(ex -> {
+                        LOGGER.log(Level.FINE, "Cache read failed for " + connectionUniqueId, ex);
+                        return Optional.empty();
+                    })
+                    .join();
+            return result.isPresent();
+        } catch (Throwable t) {
+            LOGGER.log(Level.WARNING, "Unexpected error reading blocked state for " + connectionUniqueId, t);
+            return false;
+        }
     }
 
     @IdenticEvent
