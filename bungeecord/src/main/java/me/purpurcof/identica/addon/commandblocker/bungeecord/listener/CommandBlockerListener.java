@@ -1,6 +1,7 @@
 package me.purpurcof.identica.addon.commandblocker.bungeecord.listener;
 
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
+import me.purpurcof.identica.addon.commandblocker.util.BlockedMessageFormatter;
 import me.whereareiam.identica.Serializer;
 import me.whereareiam.identica.identity.IdentityService;
 import me.whereareiam.identica.identity.actor.Identity;
@@ -57,8 +58,8 @@ public class CommandBlockerListener implements DynamicListener<ChatEvent>, Liste
 
         event.setCancelled(true);
 
-        if (!blockedMessage.isBlank()) {
-            String formatted = prefix != null ? prefix + blockedMessage : blockedMessage;
+        if (blockedMessage != null && !blockedMessage.isBlank()) {
+            String formatted = BlockedMessageFormatter.formatBlocked(prefix, blockedMessage);
             SerializerContent content = SerializerContent.builder()
                     .receiver(identity)
                     .message(formatted)

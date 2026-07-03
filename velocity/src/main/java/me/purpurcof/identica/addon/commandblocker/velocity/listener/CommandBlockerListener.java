@@ -3,6 +3,7 @@ package me.purpurcof.identica.addon.commandblocker.velocity.listener;
 import com.velocitypowered.api.event.command.CommandExecuteEvent;
 import com.velocitypowered.api.proxy.Player;
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
+import me.purpurcof.identica.addon.commandblocker.util.BlockedMessageFormatter;
 import me.whereareiam.identica.Serializer;
 import me.whereareiam.identica.identity.IdentityService;
 import me.whereareiam.identica.identity.actor.Identity;
@@ -50,8 +51,8 @@ public class CommandBlockerListener implements DynamicListener<CommandExecuteEve
 
         event.setResult(CommandExecuteEvent.CommandResult.denied());
 
-        if (!blockedMessage.isBlank()) {
-            String formatted = prefix != null ? prefix + blockedMessage : blockedMessage;
+        if (blockedMessage != null && !blockedMessage.isBlank()) {
+            String formatted = BlockedMessageFormatter.formatBlocked(prefix, blockedMessage);
             SerializerContent content = SerializerContent.builder()
                     .receiver(identity)
                     .message(formatted)
