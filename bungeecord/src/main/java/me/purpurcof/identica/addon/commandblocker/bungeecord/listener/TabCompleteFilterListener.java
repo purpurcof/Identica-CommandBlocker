@@ -3,7 +3,6 @@ package me.purpurcof.identica.addon.commandblocker.bungeecord.listener;
 import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
 import me.purpurcof.identica.addon.commandblocker.util.AliasNormalizer;
-import me.whereareiam.identica.listener.DynamicListener;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.TabCompleteEvent;
 import net.md_5.bungee.api.plugin.Listener;
@@ -13,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
-public class TabCompleteFilterListener implements DynamicListener<TabCompleteEvent>, Listener {
+public class TabCompleteFilterListener implements Listener {
 
     private final CommandFilterService commandFilterService;
     private final CommandDefinitionCollector definitionCollector;
@@ -27,7 +26,6 @@ public class TabCompleteFilterListener implements DynamicListener<TabCompleteEve
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    @Override
     public void onEvent(@NotNull TabCompleteEvent event) {
         if (!(event.getSender() instanceof ProxiedPlayer player))
             return;

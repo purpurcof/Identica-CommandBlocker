@@ -5,7 +5,6 @@ import me.purpurcof.identica.addon.commandblocker.util.BlockedMessageFormatter;
 import me.whereareiam.identica.Serializer;
 import me.whereareiam.identica.identity.IdentityService;
 import me.whereareiam.identica.identity.actor.Identity;
-import me.whereareiam.identica.listener.DynamicListener;
 import me.whereareiam.keystone.model.SerializerContent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ChatEvent;
@@ -14,7 +13,7 @@ import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
 import org.jetbrains.annotations.NotNull;
 
-public class CommandBlockerListener implements DynamicListener<ChatEvent>, Listener {
+public class CommandBlockerListener implements Listener {
 
     private final CommandFilterService commandFilterService;
     private final IdentityService identityService;
@@ -34,7 +33,6 @@ public class CommandBlockerListener implements DynamicListener<ChatEvent>, Liste
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    @Override
     public void onEvent(@NotNull ChatEvent event) {
         if (!event.isCommand())
             return;

@@ -5,13 +5,12 @@ import com.velocitypowered.api.event.command.PlayerAvailableCommandsEvent;
 import com.velocitypowered.api.proxy.Player;
 import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
-import me.whereareiam.identica.listener.DynamicListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TabCompleteFilterListener implements DynamicListener<PlayerAvailableCommandsEvent> {
+public class TabCompleteFilterListener {
 
     private final CommandFilterService commandFilterService;
     private final CommandDefinitionCollector definitionCollector;
@@ -24,7 +23,6 @@ public class TabCompleteFilterListener implements DynamicListener<PlayerAvailabl
         this.definitionCollector = definitionCollector;
     }
 
-    @Override
     public void onEvent(@NotNull PlayerAvailableCommandsEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
