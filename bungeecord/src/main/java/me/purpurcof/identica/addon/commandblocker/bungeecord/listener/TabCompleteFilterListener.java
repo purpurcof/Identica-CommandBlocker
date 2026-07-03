@@ -10,6 +10,7 @@ import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Locale;
 import java.util.Set;
 
 public class TabCompleteFilterListener implements DynamicListener<TabCompleteEvent>, Listener {
@@ -43,7 +44,7 @@ public class TabCompleteFilterListener implements DynamicListener<TabCompleteEve
             String trimmed = suggestion.startsWith("/") ? suggestion.substring(1) : suggestion;
             int spaceIndex = trimmed.indexOf(' ');
             String firstWord = spaceIndex > 0 ? trimmed.substring(0, spaceIndex) : trimmed;
-            return !allowedNames.contains(firstWord);
+            return !allowedNames.contains(firstWord.toLowerCase(Locale.ROOT));
         });
     }
 }
