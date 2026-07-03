@@ -14,6 +14,7 @@ import me.whereareiam.identica.replication.cache.ReplicatedCache;
 import me.whereareiam.keystone.Actor;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -86,17 +87,19 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
     }
 
     private boolean isAllowedCommand(String commandLine) {
-        String trimmed = commandLine.trim();
-        if (trimmed.startsWith("/"))
-            trimmed = trimmed.substring(1);
+        if (commandLine == null) return false;
+        String normalized = commandLine.trim();
+        if (normalized.startsWith("/"))
+            normalized = normalized.substring(1);
+        normalized = normalized.toLowerCase(Locale.ROOT);
 
         Set<String> allowedAliases = definitionCollector.getAllowedDuringAuthAliases();
 
-        if (allowedAliases.contains(trimmed))
+        if (allowedAliases.contains(normalized))
             return true;
 
-        int spaceIndex = trimmed.indexOf(' ');
-        String firstWord = spaceIndex > 0 ? trimmed.substring(0, spaceIndex) : trimmed;
+        int spaceIndex = normalized.indexOf(' ');
+        String firstWord = spaceIndex > 0 ? normalized.substring(0, spaceIndex) : normalized;
         return allowedAliases.contains(firstWord);
     }
 }
