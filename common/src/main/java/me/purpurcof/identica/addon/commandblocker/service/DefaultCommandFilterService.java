@@ -1,6 +1,7 @@
 package me.purpurcof.identica.addon.commandblocker.service;
 
 import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
+import me.purpurcof.identica.addon.commandblocker.util.AliasNormalizer;
 import me.whereareiam.identica.event.EventListener;
 import me.whereareiam.identica.event.base.IdenticEvent;
 import me.whereareiam.identica.event.scenario.authentication.AuthenticationRequiredEvent;
@@ -14,7 +15,6 @@ import me.whereareiam.identica.replication.cache.ReplicatedCache;
 import me.whereareiam.keystone.Actor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -105,11 +105,8 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
     }
 
     private boolean isAllowedCommand(String commandLine) {
-        if (commandLine == null) return false;
-        String normalized = commandLine.trim();
-        if (normalized.startsWith("/"))
-            normalized = normalized.substring(1);
-        normalized = normalized.toLowerCase(Locale.ROOT);
+        String normalized = AliasNormalizer.normalize(commandLine);
+        if (normalized.isEmpty()) return false;
 
         Set<String> allowedAliases = definitionCollector.getAllowedDuringAuthAliases();
 

@@ -3,9 +3,10 @@ package me.purpurcof.identica.addon.commandblocker.collector;
 import me.purpurcof.identica.addon.commandblocker.config.CommandBlockerConfiguration;
 import me.whereareiam.identica.Reloadable;
 
+import me.purpurcof.identica.addon.commandblocker.util.AliasNormalizer;
+
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,9 +37,7 @@ public class DefaultCommandDefinitionCollector implements CommandDefinitionColle
         Set<String> raw = config.getAllowedCommands();
         this.cachedAliases = raw == null ? Collections.emptySet() : raw.stream()
                 .filter(Objects::nonNull)
-                .map(String::trim)
-                .map(s -> s.startsWith("/") ? s.substring(1) : s)
-                .map(s -> s.toLowerCase(Locale.ROOT))
+                .map(AliasNormalizer::normalize)
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toUnmodifiableSet());
         this.cachedCommandNames = extractCommandNames(cachedAliases);

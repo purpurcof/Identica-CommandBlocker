@@ -2,6 +2,7 @@ package me.purpurcof.identica.addon.commandblocker.bungeecord.listener;
 
 import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
+import me.purpurcof.identica.addon.commandblocker.util.AliasNormalizer;
 import me.whereareiam.identica.listener.DynamicListener;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.TabCompleteEvent;
@@ -10,7 +11,6 @@ import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Locale;
 import java.util.Set;
 
 public class TabCompleteFilterListener implements DynamicListener<TabCompleteEvent>, Listener {
@@ -41,10 +41,10 @@ public class TabCompleteFilterListener implements DynamicListener<TabCompleteEve
             if (suggestion == null || suggestion.isBlank())
                 return true;
 
-            String trimmed = suggestion.startsWith("/") ? suggestion.substring(1) : suggestion;
-            int spaceIndex = trimmed.indexOf(' ');
-            String firstWord = spaceIndex > 0 ? trimmed.substring(0, spaceIndex) : trimmed;
-            return !allowedNames.contains(firstWord.toLowerCase(Locale.ROOT));
+            String firstWord = AliasNormalizer.normalize(suggestion);
+            int spaceIndex = firstWord.indexOf(' ');
+            if (spaceIndex > 0) firstWord = firstWord.substring(0, spaceIndex);
+            return !allowedNames.contains(firstWord);
         });
     }
 }
