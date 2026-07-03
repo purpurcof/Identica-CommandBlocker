@@ -7,16 +7,11 @@ import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCol
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
 import me.whereareiam.identica.listener.DynamicListener;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
-import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TabCompleteFilterListener implements DynamicListener<PlayerAvailableCommandsEvent> {
-
-    private static final Logger logger = LoggerFactory.getLogger(TabCompleteFilterListener.class);
-    private static final Field CHILDREN_FIELD = getChildrenField();
 
     private final CommandFilterService commandFilterService;
     private final CommandDefinitionCollector definitionCollector;
@@ -36,37 +31,16 @@ public class TabCompleteFilterListener implements DynamicListener<PlayerAvailabl
 
         if (!commandFilterService.isBlocked(player.getUniqueId())) return;
 
-        if (CHILDREN_FIELD == null) {
-            logger.warn("Unable to filter commands: reflection field not available");
-            return;
-        }
+        Set<String> allowed = definitionCollector.getAllowedDuringAuthCommandNames();
+        if (allowed.isEmpty()) return;
 
-        Map<String, CommandNode<?>> rootChildren = getChildrenMap(event.getRootNode());
-        if (rootChildren == null) return;
+        Set<String> toRemove = event.getRootNode().getChildren().stream()
+                .map(CommandNode::getName)
+                .filter(name -> !allowed.contains(name))
+                .collect(Collectors.toSet());
 
-        rootChildren.keySet().removeIf(key -> !definitionCollector.getAllowedDuringAuthCommandNames().contains(key));
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Map<String, CommandNode<?>> getChildrenMap(CommandNode<?> node) {
-        if (CHILDREN_FIELD == null) return null;
-
-        try {
-            return (Map<String, CommandNode<?>>) CHILDREN_FIELD.get(node);
-        } catch (IllegalAccessException e) {
-            logger.debug("Failed to access children field via reflection", e);
-            return null;
-        }
-    }
-
-    private static Field getChildrenField() {
-        try {
-            Field field = CommandNode.class.getDeclaredField("children");
-            field.setAccessible(true);
-            return field;
-        } catch (NoSuchFieldException e) {
-            logger.warn("Could not find 'children' field in CommandNode class", e);
-            return null;
+        for (String name : toRemove) {
+            event.getRootNode().removeChildByName(name);
         }
     }
 }
