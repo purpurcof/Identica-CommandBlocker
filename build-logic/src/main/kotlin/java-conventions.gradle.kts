@@ -6,7 +6,7 @@ val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
 }
 
