@@ -44,5 +44,8 @@ public class TabCompleteFilterListener implements Listener {
             if (spaceIndex > 0) firstWord = firstWord.substring(0, spaceIndex);
             return !allowedNames.contains(firstWord);
         });
+
+        if (event.getSuggestions().isEmpty())
+            event.setCancelled(true);
     }
 }
