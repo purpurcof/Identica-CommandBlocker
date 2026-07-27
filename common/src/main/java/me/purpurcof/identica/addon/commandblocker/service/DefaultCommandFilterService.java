@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 
 public class DefaultCommandFilterService implements CommandFilterService, EventListener {
 
-    private static final long DEFAULT_TTL_MS = 300_000;
     private static final long CACHE_GET_TIMEOUT_MS = 250;
     private static final Logger LOGGER = Logger.getLogger(DefaultCommandFilterService.class.getName());
 
@@ -71,7 +70,7 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
     @IdenticEvent
     public void onAuthenticationRequired(AuthenticationRequiredEvent event) {
         UUID connectionId = event.getConnectionUniqueId();
-        blockedCache.put(connectionId.toString(), connectionId, DEFAULT_TTL_MS);
+        blockedCache.put(connectionId.toString(), connectionId);
     }
 
     @IdenticEvent
@@ -83,7 +82,7 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
     @IdenticEvent
     public void onRegistrationRequired(RegistrationRequiredEvent event) {
         UUID connectionId = event.getConnectionUniqueId();
-        blockedCache.put(connectionId.toString(), connectionId, DEFAULT_TTL_MS);
+        blockedCache.put(connectionId.toString(), connectionId);
     }
 
     @IdenticEvent
@@ -95,7 +94,7 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
     @IdenticEvent
     public void onMigrationRequired(MigrationRequiredEvent event) {
         UUID connectionId = event.getConnectionUniqueId();
-        blockedCache.put(connectionId.toString(), connectionId, DEFAULT_TTL_MS);
+        blockedCache.put(connectionId.toString(), connectionId);
     }
 
     @IdenticEvent
