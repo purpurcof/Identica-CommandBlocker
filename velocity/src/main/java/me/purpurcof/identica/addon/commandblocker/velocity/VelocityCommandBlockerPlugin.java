@@ -1,6 +1,8 @@
 package me.purpurcof.identica.addon.commandblocker.velocity;
 
 import com.google.inject.Inject;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.velocitypowered.api.event.EventManager;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.command.PlayerAvailableCommandsEvent;
@@ -17,6 +19,8 @@ import me.purpurcof.identica.addon.commandblocker.service.DefaultCommandFilterSe
 import me.purpurcof.identica.addon.commandblocker.velocity.listener.CommandBlockerListener;
 import me.purpurcof.identica.addon.commandblocker.velocity.listener.TabCompleteFilterListener;
 import me.whereareiam.identica.IdenticaAPI;
+import me.whereareiam.identica.Registry;
+import me.whereareiam.identica.Reloadable;
 import me.whereareiam.identica.config.ConfigurationTypeResolver;
 import me.whereareiam.identica.identity.IdentityService;
 import me.whereareiam.identica.model.replication.ReplicationType;
@@ -73,6 +77,8 @@ public class VelocityCommandBlockerPlugin {
                 .replicated(ReplicationType.identity(UUID.class));
         DefaultCommandFilterService filterService = new DefaultCommandFilterService(definitionCollector, blockedCache);
         IdenticaAPI.getEventManager().register(filterService);
+
+        IdenticaAPI.getService(Key.get(new TypeLiteral<Registry<Reloadable>>() {})).register((Reloadable) definitionCollector);
 
         CommandBlockerListener commandBlocker = new CommandBlockerListener(
                 filterService, identityService, config.getPrefix(), config.getBlockedMessage());
