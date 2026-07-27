@@ -7,7 +7,6 @@ import me.purpurcof.identica.addon.commandblocker.util.AliasNormalizer;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,11 +44,8 @@ public class DefaultCommandDefinitionCollector implements CommandDefinitionColle
     }
 
     private static Set<String> extractCommandNames(Set<String> aliases) {
-        Set<String> names = new HashSet<>();
-        for (String alias : aliases) {
-            int spaceIndex = alias.indexOf(' ');
-            names.add(spaceIndex > 0 ? alias.substring(0, spaceIndex) : alias);
-        }
-        return Collections.unmodifiableSet(names);
+        return aliases.stream()
+                .map(AliasNormalizer::firstWord)
+                .collect(Collectors.toUnmodifiableSet());
     }
 }

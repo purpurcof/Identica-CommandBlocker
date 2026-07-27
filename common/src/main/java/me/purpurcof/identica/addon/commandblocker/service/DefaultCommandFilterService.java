@@ -100,8 +100,6 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
         if (allowedAliases.contains(normalized))
             return true;
 
-        int spaceIndex = normalized.indexOf(' ');
-        String firstWord = spaceIndex > 0 ? normalized.substring(0, spaceIndex) : normalized;
-        return allowedAliases.contains(firstWord);
+        return allowedAliases.contains(AliasNormalizer.firstWord(normalized));
     }
 }

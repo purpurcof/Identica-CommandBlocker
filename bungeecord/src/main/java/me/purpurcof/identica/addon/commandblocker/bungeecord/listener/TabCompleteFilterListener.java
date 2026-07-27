@@ -34,10 +34,8 @@ public class TabCompleteFilterListener implements Listener {
             if (suggestion == null || suggestion.isBlank())
                 return true;
 
-            String firstWord = AliasNormalizer.normalize(suggestion);
-            int spaceIndex = firstWord.indexOf(' ');
-            if (spaceIndex > 0) firstWord = firstWord.substring(0, spaceIndex);
-            return !allowedNames.contains(firstWord);
+            String normalized = AliasNormalizer.normalize(suggestion);
+            return !allowedNames.contains(AliasNormalizer.firstWord(normalized));
         });
 
         if (event.getSuggestions().isEmpty())
@@ -58,10 +56,8 @@ public class TabCompleteFilterListener implements Listener {
             if (suggestion == null || suggestion.isBlank())
                 return true;
 
-            String firstWord = AliasNormalizer.normalize(suggestion);
-            int spaceIndex = firstWord.indexOf(' ');
-            if (spaceIndex > 0) firstWord = firstWord.substring(0, spaceIndex);
-            return !allowedNames.contains(firstWord);
+            String normalized = AliasNormalizer.normalize(suggestion);
+            return !allowedNames.contains(AliasNormalizer.firstWord(normalized));
         });
 
         if (event.getSuggestions().isEmpty())

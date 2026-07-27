@@ -12,4 +12,9 @@ public final class AliasNormalizer {
         if (s.startsWith("/")) s = s.substring(1);
         return s.toLowerCase(Locale.ROOT);
     }
+
+    public static String firstWord(String s) {
+        int spaceIndex = s.indexOf(' ');
+        return spaceIndex > 0 ? s.substring(0, spaceIndex) : s;
+    }
 }
