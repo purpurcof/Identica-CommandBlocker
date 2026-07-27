@@ -5,6 +5,7 @@ import me.whereareiam.identica.Reloadable;
 
 import me.purpurcof.identica.addon.commandblocker.util.AliasNormalizer;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -34,7 +35,7 @@ public class DefaultCommandDefinitionCollector implements CommandDefinitionColle
     @Override
     public void reload() {
         config.reload();
-        Set<String> raw = config.getAllowedCommands();
+        Collection<String> raw = config.getAllowedCommands();
         this.cachedAliases = raw == null ? Collections.emptySet() : raw.stream()
                 .filter(Objects::nonNull)
                 .map(AliasNormalizer::normalize)
