@@ -12,7 +12,7 @@ public class CommandBlockerConfiguration {
 
     private final Configura config;
     private final Path path;
-    private CommandBlockerConfig data;
+    private volatile CommandBlockerConfig data;
 
     public CommandBlockerConfiguration(Path dataDirectory) {
         this(dataDirectory, null);
