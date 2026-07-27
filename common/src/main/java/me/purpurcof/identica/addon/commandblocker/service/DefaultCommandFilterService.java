@@ -17,21 +17,17 @@ import me.whereareiam.identica.replication.cache.ReplicatedCache;
 import me.whereareiam.keystone.Actor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
 public class DefaultCommandFilterService implements CommandFilterService, EventListener {
 
-    private static final long CACHE_GET_TIMEOUT_MS = 250;
-    private static final Logger LOGGER = Logger.getLogger(DefaultCommandFilterService.class.getName());
-
     private final CommandDefinitionCollector definitionCollector;
     private final ReplicatedCache<UUID> blockedCache;
+
+    private final Set<UUID> blockedConnections = ConcurrentHashMap.newKeySet();
 
     @Override
     public boolean isAllowed(@NotNull Actor actor, @NotNull String commandLine) {
@@ -50,54 +46,48 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
 
     @Override
     public boolean isBlocked(@NotNull UUID connectionUniqueId) {
-        try {
-            Optional<UUID> result = blockedCache.get(connectionUniqueId.toString())
-                    .completeOnTimeout(Optional.empty(), CACHE_GET_TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                    .exceptionally(ex -> {
-                        LOGGER.log(Level.FINE, "Cache read failed for " + connectionUniqueId, ex);
-                        return Optional.empty();
-                    })
-                    .join();
-            return result.isPresent();
-        } catch (Throwable t) {
-            LOGGER.log(Level.WARNING, "Unexpected error reading blocked state for " + connectionUniqueId, t);
-            return false;
-        }
+        return blockedConnections.contains(connectionUniqueId);
     }
 
     @IdenticEvent(EventOrder.HIGH)
     public void onAuthenticationRequired(AuthenticationRequiredEvent event) {
         UUID connectionId = event.getConnectionUniqueId();
+        blockedConnections.add(connectionId);
         blockedCache.put(connectionId.toString(), connectionId);
     }
 
     @IdenticEvent(EventOrder.HIGH)
     public void onAuthenticationResolved(AuthenticationResolvedEvent event) {
         UUID connectionId = event.getConnectionUniqueId();
+        blockedConnections.remove(connectionId);
         blockedCache.invalidate(connectionId.toString());
     }
 
     @IdenticEvent(EventOrder.HIGH)
     public void onRegistrationRequired(RegistrationRequiredEvent event) {
         UUID connectionId = event.getConnectionUniqueId();
+        blockedConnections.add(connectionId);
         blockedCache.put(connectionId.toString(), connectionId);
     }
 
     @IdenticEvent(EventOrder.HIGH)
     public void onRegistrationResolved(RegistrationResolvedEvent event) {
         UUID connectionId = event.getConnectionUniqueId();
+        blockedConnections.remove(connectionId);
         blockedCache.invalidate(connectionId.toString());
     }
 
     @IdenticEvent(EventOrder.HIGH)
     public void onMigrationRequired(MigrationRequiredEvent event) {
         UUID connectionId = event.getConnectionUniqueId();
+        blockedConnections.add(connectionId);
         blockedCache.put(connectionId.toString(), connectionId);
     }
 
     @IdenticEvent(EventOrder.HIGH)
     public void onMigrationResolved(MigrationResolvedEvent event) {
         UUID connectionId = event.getConnectionUniqueId();
+        blockedConnections.remove(connectionId);
         blockedCache.invalidate(connectionId.toString());
     }
 
