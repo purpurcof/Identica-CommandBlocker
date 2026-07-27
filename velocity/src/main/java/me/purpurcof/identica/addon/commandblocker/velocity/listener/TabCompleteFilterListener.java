@@ -3,6 +3,7 @@ package me.purpurcof.identica.addon.commandblocker.velocity.listener;
 import com.mojang.brigadier.tree.CommandNode;
 import com.velocitypowered.api.event.command.PlayerAvailableCommandsEvent;
 import com.velocitypowered.api.proxy.Player;
+import lombok.RequiredArgsConstructor;
 import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
 import org.jetbrains.annotations.NotNull;
@@ -10,18 +11,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public class TabCompleteFilterListener {
 
     private final CommandFilterService commandFilterService;
     private final CommandDefinitionCollector definitionCollector;
-
-    public TabCompleteFilterListener(
-            CommandFilterService commandFilterService,
-            CommandDefinitionCollector definitionCollector
-    ) {
-        this.commandFilterService = commandFilterService;
-        this.definitionCollector = definitionCollector;
-    }
 
     public void onEvent(@NotNull PlayerAvailableCommandsEvent event) {
         Player player = event.getPlayer();

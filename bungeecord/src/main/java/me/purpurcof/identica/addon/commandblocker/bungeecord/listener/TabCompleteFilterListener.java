@@ -1,5 +1,6 @@
 package me.purpurcof.identica.addon.commandblocker.bungeecord.listener;
 
+import lombok.RequiredArgsConstructor;
 import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
 import me.purpurcof.identica.addon.commandblocker.util.AliasNormalizer;
@@ -12,18 +13,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
+@RequiredArgsConstructor
 public class TabCompleteFilterListener implements Listener {
 
     private final CommandFilterService commandFilterService;
     private final CommandDefinitionCollector definitionCollector;
-
-    public TabCompleteFilterListener(
-            CommandFilterService commandFilterService,
-            CommandDefinitionCollector definitionCollector
-    ) {
-        this.commandFilterService = commandFilterService;
-        this.definitionCollector = definitionCollector;
-    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEvent(@NotNull TabCompleteEvent event) {

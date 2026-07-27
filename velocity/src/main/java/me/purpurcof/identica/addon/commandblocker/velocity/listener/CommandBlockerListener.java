@@ -2,6 +2,7 @@ package me.purpurcof.identica.addon.commandblocker.velocity.listener;
 
 import com.velocitypowered.api.event.command.CommandExecuteEvent;
 import com.velocitypowered.api.proxy.Player;
+import lombok.RequiredArgsConstructor;
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
 import me.purpurcof.identica.addon.commandblocker.util.BlockedMessageFormatter;
 import me.whereareiam.identica.Serializer;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@RequiredArgsConstructor
 public class CommandBlockerListener {
 
     private static final Logger LOGGER = Logger.getLogger(CommandBlockerListener.class.getName());
@@ -21,18 +23,6 @@ public class CommandBlockerListener {
     private final IdentityService identityService;
     private final String prefix;
     private final String blockedMessage;
-
-    public CommandBlockerListener(
-            CommandFilterService commandFilterService,
-            IdentityService identityService,
-            String prefix,
-            String blockedMessage
-    ) {
-        this.commandFilterService = commandFilterService;
-        this.identityService = identityService;
-        this.prefix = prefix;
-        this.blockedMessage = blockedMessage;
-    }
 
     public void onEvent(@NotNull CommandExecuteEvent event) {
         try {

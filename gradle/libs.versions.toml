@@ -3,6 +3,7 @@ identica = "dev-e605d1b"
 configura = "dev-43bc95a"
 keystone = "dev-790a33e"
 guice = "7.0.0"
+lombok = "1.18.42"
 annotations = "26.1.0"
 adventure = "5.2.0"
 bungeecord = "26.1-R0.1-SNAPSHOT"
@@ -19,6 +20,7 @@ configura = { group = "me.whereareiam", name = "configura", version.ref = "confi
 keystone = { group = "me.whereareiam", name = "keystone", version.ref = "keystone" }
 guice = { group = "com.google.inject", name = "guice", version.ref = "guice" }
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 adventure = { group = "net.kyori", name = "adventure-api", version.ref = "adventure" }
 adventure-minimessage = { group = "net.kyori", name = "adventure-text-minimessage", version.ref = "adventure" }
 bungeecord = { group = "net.md-5", name = "bungeecord-api", version.ref = "bungeecord" }

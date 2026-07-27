@@ -1,5 +1,6 @@
 package me.purpurcof.identica.addon.commandblocker.bungeecord.listener;
 
+import lombok.RequiredArgsConstructor;
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
 import me.purpurcof.identica.addon.commandblocker.util.BlockedMessageFormatter;
 import me.whereareiam.identica.Serializer;
@@ -13,24 +14,13 @@ import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
 import org.jetbrains.annotations.NotNull;
 
+@RequiredArgsConstructor
 public class CommandBlockerListener implements Listener {
 
     private final CommandFilterService commandFilterService;
     private final IdentityService identityService;
     private final String prefix;
     private final String blockedMessage;
-
-    public CommandBlockerListener(
-            CommandFilterService commandFilterService,
-            IdentityService identityService,
-            String prefix,
-            String blockedMessage
-    ) {
-        this.commandFilterService = commandFilterService;
-        this.identityService = identityService;
-        this.prefix = prefix;
-        this.blockedMessage = blockedMessage;
-    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEvent(@NotNull ChatEvent event) {

@@ -1,5 +1,6 @@
 package me.purpurcof.identica.addon.commandblocker.service;
 
+import lombok.RequiredArgsConstructor;
 import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
 import me.purpurcof.identica.addon.commandblocker.util.AliasNormalizer;
 import me.whereareiam.identica.event.EventListener;
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@RequiredArgsConstructor
 public class DefaultCommandFilterService implements CommandFilterService, EventListener {
 
     private static final long CACHE_GET_TIMEOUT_MS = 250;
@@ -29,11 +31,6 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
 
     private final CommandDefinitionCollector definitionCollector;
     private final ReplicatedCache<UUID> blockedCache;
-
-    public DefaultCommandFilterService(CommandDefinitionCollector definitionCollector, ReplicatedCache<UUID> blockedCache) {
-        this.definitionCollector = definitionCollector;
-        this.blockedCache = blockedCache;
-    }
 
     @Override
     public boolean isAllowed(@NotNull Actor actor, @NotNull String commandLine) {
