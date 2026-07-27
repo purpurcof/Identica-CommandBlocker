@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 
 @DisplayName("Default Command Filter Service")
 class DefaultCommandFilterServiceTest {
+
     private final CommandDefinitionCollector definitionCollector = mock(CommandDefinitionCollector.class);
 
     @SuppressWarnings("unchecked")

@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 @DisplayName("Velocity Tab Complete Filter Listener")
 class TabCompleteFilterListenerTest {
+
     private final CommandFilterService commandFilterService = mock(CommandFilterService.class);
     private final CommandDefinitionCollector definitionCollector = mock(CommandDefinitionCollector.class);
     private final TabCompleteFilterListener listener = new TabCompleteFilterListener(commandFilterService, definitionCollector);

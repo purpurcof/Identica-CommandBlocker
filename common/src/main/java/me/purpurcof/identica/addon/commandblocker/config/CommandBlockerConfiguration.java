@@ -14,10 +14,6 @@ public class CommandBlockerConfiguration {
     private final Path path;
     private volatile CommandBlockerConfig data;
 
-    public CommandBlockerConfiguration(Path dataDirectory) {
-        this(dataDirectory, null);
-    }
-
     public CommandBlockerConfiguration(Path dataDirectory, ConfigurationTypeResolver typeResolver) {
         Format format = typeResolver != null ? typeResolver.getConfigurationType() : Format.YAML;
         this.config = Config.builder()

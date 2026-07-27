@@ -24,22 +24,19 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class DefaultCommandFilterService implements CommandFilterService, EventListener {
 
+    private final Set<UUID> blockedConnections = ConcurrentHashMap.newKeySet();
+
     private final CommandDefinitionCollector definitionCollector;
     private final ReplicatedCache<UUID> blockedCache;
 
-    private final Set<UUID> blockedConnections = ConcurrentHashMap.newKeySet();
-
     @Override
     public boolean isAllowed(@NotNull Actor actor, @NotNull String commandLine) {
-        if (commandLine.isBlank())
-            return false;
+        if (commandLine.isBlank()) return false;
 
-        if (!(actor instanceof Identity identity))
-            return true;
+        if (!(actor instanceof Identity identity)) return true;
 
         UUID connectionUniqueId = identity.getConnectionUniqueId();
-        if (connectionUniqueId == null || !isBlocked(connectionUniqueId))
-            return true;
+        if (connectionUniqueId == null || !isBlocked(connectionUniqueId)) return true;
 
         return isAllowedCommand(commandLine);
     }
@@ -97,8 +94,7 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
 
         Set<String> allowedAliases = definitionCollector.getAllowedDuringAuthAliases();
 
-        if (allowedAliases.contains(normalized))
-            return true;
+        if (allowedAliases.contains(normalized)) return true;
 
         return allowedAliases.contains(AliasNormalizer.firstWord(normalized));
     }

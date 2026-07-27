@@ -22,17 +22,14 @@ public class TabCompleteFilterListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEvent(@NotNull TabCompleteEvent event) {
-        if (!(event.getSender() instanceof ProxiedPlayer player))
-            return;
+        if (!(event.getSender() instanceof ProxiedPlayer player)) return;
 
-        if (!commandFilterService.isBlocked(player.getUniqueId()))
-            return;
+        if (!commandFilterService.isBlocked(player.getUniqueId())) return;
 
         Set<String> allowedNames = definitionCollector.getAllowedDuringAuthCommandNames();
 
         event.getSuggestions().removeIf(suggestion -> {
-            if (suggestion == null || suggestion.isBlank())
-                return true;
+            if (suggestion == null || suggestion.isBlank()) return true;
 
             String normalized = AliasNormalizer.normalize(suggestion);
             return !allowedNames.contains(AliasNormalizer.firstWord(normalized));
@@ -44,17 +41,14 @@ public class TabCompleteFilterListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onResponse(@NotNull TabCompleteResponseEvent event) {
-        if (!(event.getSender() instanceof ProxiedPlayer player))
-            return;
+        if (!(event.getSender() instanceof ProxiedPlayer player)) return;
 
-        if (!commandFilterService.isBlocked(player.getUniqueId()))
-            return;
+        if (!commandFilterService.isBlocked(player.getUniqueId())) return;
 
         Set<String> allowedNames = definitionCollector.getAllowedDuringAuthCommandNames();
 
         event.getSuggestions().removeIf(suggestion -> {
-            if (suggestion == null || suggestion.isBlank())
-                return true;
+            if (suggestion == null || suggestion.isBlank()) return true;
 
             String normalized = AliasNormalizer.normalize(suggestion);
             return !allowedNames.contains(AliasNormalizer.firstWord(normalized));

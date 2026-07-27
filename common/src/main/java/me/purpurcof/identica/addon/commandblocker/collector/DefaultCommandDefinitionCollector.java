@@ -13,9 +13,10 @@ import java.util.stream.Collectors;
 
 public class DefaultCommandDefinitionCollector implements CommandDefinitionCollector, Reloadable {
 
-    private final CommandBlockerConfiguration config;
     private volatile Set<String> cachedAliases = Collections.emptySet();
     private volatile Set<String> cachedCommandNames = Collections.emptySet();
+
+    private final CommandBlockerConfiguration config;
 
     public DefaultCommandDefinitionCollector(CommandBlockerConfiguration config) {
         this.config = config;
@@ -34,6 +35,7 @@ public class DefaultCommandDefinitionCollector implements CommandDefinitionColle
     @Override
     public void reload() {
         config.reload();
+
         Collection<String> raw = config.getAllowedCommands();
         this.cachedAliases = raw == null ? Collections.emptySet() : raw.stream()
                 .filter(Objects::nonNull)

@@ -24,25 +24,19 @@ public class CommandBlockerListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEvent(@NotNull ChatEvent event) {
-        if (!event.isCommand())
-            return;
+        if (!event.isCommand()) return;
 
-        if (!(event.getSender() instanceof ProxiedPlayer player))
-            return;
+        if (!(event.getSender() instanceof ProxiedPlayer player)) return;
 
         String message = event.getMessage();
-        if (message == null || message.isBlank())
-            return;
+        if (message == null || message.isBlank()) return;
 
-        if (!commandFilterService.isBlocked(player.getUniqueId()))
-            return;
+        if (!commandFilterService.isBlocked(player.getUniqueId())) return;
 
         Identity identity = identityService.findByConnectionUniqueId(player.getUniqueId()).orElse(null);
-        if (identity == null)
-            return;
+        if (identity == null) return;
 
-        if (commandFilterService.isAllowed(identity, message))
-            return;
+        if (commandFilterService.isAllowed(identity, message)) return;
 
         event.setCancelled(true);
 

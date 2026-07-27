@@ -26,22 +26,17 @@ public class CommandBlockerListener {
 
     public void onEvent(@NotNull CommandExecuteEvent event) {
         try {
-            if (!(event.getCommandSource() instanceof Player player))
-                return;
+            if (!(event.getCommandSource() instanceof Player player)) return;
 
             String commandLine = event.getCommand();
-            if (commandLine == null || commandLine.isBlank())
-                return;
+            if (commandLine == null || commandLine.isBlank()) return;
 
-            if (!commandFilterService.isBlocked(player.getUniqueId()))
-                return;
+            if (!commandFilterService.isBlocked(player.getUniqueId())) return;
 
             Identity identity = identityService.findByConnectionUniqueId(player.getUniqueId()).orElse(null);
-            if (identity == null)
-                return;
+            if (identity == null) return;
 
-            if (commandFilterService.isAllowed(identity, commandLine))
-                return;
+            if (commandFilterService.isAllowed(identity, commandLine)) return;
 
             event.setResult(CommandExecuteEvent.CommandResult.denied());
 
