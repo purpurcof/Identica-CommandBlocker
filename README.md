@@ -18,7 +18,8 @@ Addon-plugin for [Identica](https://github.com/whereareiam/Identica) that blocks
 
 ### Requirements
 
-* **Identica:** 3.0.0+
+* **Dependencies:**
+  * [Identica 3.0.0](https://github.com/whereareiam/Identica)
 * **Platforms:**
   * Velocity
   * BungeeCord (untested, may work)
