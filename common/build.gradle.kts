@@ -18,8 +18,7 @@ dependencies {
 
 extensions.configure<AttacheExtension>("attache") {
     transitive.set(true)
-    repository("https://registry.whereareiam.me/release")
-    repository("https://registry.whereareiam.me/development")
+    repository("https://registry.whereareiam.me/maven/packages")
     library(libs.configura) {
         relocate("com{}fasterxml{}jackson", "me.purpurcof.identica.addon.commandblocker.libs.jackson")
         relocate("org{}yaml{}snakeyaml", "me.purpurcof.identica.addon.commandblocker.libs.snakeyaml")
