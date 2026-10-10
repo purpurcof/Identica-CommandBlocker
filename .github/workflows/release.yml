@@ -51,9 +51,11 @@ jobs:
       - name: Extract project details
         id: details
         shell: bash
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.release-tag }}
         run: |
           echo "name=$(grep 'rootProject.name' settings.gradle.kts | awk -F "=" '{print $2}' | tr -d ' \"\n')" >> $GITHUB_OUTPUT
-          echo "version=${{ steps.release.outputs.release-tag }}" | sed 's/^version=v/version=/' >> $GITHUB_OUTPUT
+          echo "version=${RELEASE_TAG}" | sed 's/^version=v/version=/' >> $GITHUB_OUTPUT
 
   build:
     needs: prepare

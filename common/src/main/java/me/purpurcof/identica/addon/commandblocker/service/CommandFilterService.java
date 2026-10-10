@@ -9,5 +9,7 @@ public interface CommandFilterService {
 
     boolean isAllowed(@NotNull Actor actor, @NotNull String commandLine);
 
+    boolean isAllowed(@NotNull UUID connectionUniqueId, @NotNull String commandLine);
+
     boolean isBlocked(@NotNull UUID connectionUniqueId);
 }

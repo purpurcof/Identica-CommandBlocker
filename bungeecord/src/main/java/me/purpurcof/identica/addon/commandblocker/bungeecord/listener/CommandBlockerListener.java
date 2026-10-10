@@ -1,6 +1,7 @@
 package me.purpurcof.identica.addon.commandblocker.bungeecord.listener;
 
 import lombok.RequiredArgsConstructor;
+import me.purpurcof.identica.addon.commandblocker.config.CommandBlockerConfiguration;
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
 import me.purpurcof.identica.addon.commandblocker.util.BlockedMessageFormatter;
 import me.whereareiam.identica.Serializer;
@@ -14,39 +15,51 @@ import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 @RequiredArgsConstructor
 public class CommandBlockerListener implements Listener {
 
+    private static final Logger LOGGER = Logger.getLogger(CommandBlockerListener.class.getName());
+
     private final CommandFilterService commandFilterService;
     private final IdentityService identityService;
-    private final String prefix;
-    private final String blockedMessage;
+    private final CommandBlockerConfiguration config;
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEvent(@NotNull ChatEvent event) {
-        if (!event.isCommand()) return;
+        try {
+            if (!event.isCommand()) return;
 
-        if (!(event.getSender() instanceof ProxiedPlayer player)) return;
+            if (!(event.getSender() instanceof ProxiedPlayer player)) return;
 
-        String message = event.getMessage();
-        if (message == null || message.isBlank()) return;
+            String message = event.getMessage();
+            if (message == null || message.isBlank()) return;
 
-        if (!commandFilterService.isBlocked(player.getUniqueId())) return;
+            UUID playerUUID = player.getUniqueId();
+            if (!commandFilterService.isBlocked(playerUUID)) return;
 
-        Identity identity = identityService.findByConnectionUniqueId(player.getUniqueId()).orElse(null);
-        if (identity == null) return;
+            if (commandFilterService.isAllowed(playerUUID, message)) return;
 
-        if (commandFilterService.isAllowed(identity, message)) return;
+            event.setCancelled(true);
 
-        event.setCancelled(true);
-
-        if (blockedMessage != null && !blockedMessage.isBlank()) {
-            String formatted = BlockedMessageFormatter.formatBlocked(prefix, blockedMessage);
-            SerializerContent content = SerializerContent.builder()
-                    .receiver(identity)
-                    .message(formatted)
-                    .build();
-            identity.sendMessage(Serializer.serialize(content));
+            String blockedMessage = config.getBlockedMessage();
+            if (blockedMessage != null && !blockedMessage.isBlank()) {
+                Identity identity = identityService.findByConnectionUniqueId(playerUUID).orElse(null);
+                if (identity != null) {
+                    String formatted = BlockedMessageFormatter.formatBlocked(config.getPrefix(), blockedMessage);
+                    SerializerContent content = SerializerContent.builder()
+                            .receiver(identity)
+                            .message(formatted)
+                            .build();
+                    identity.sendMessage(Serializer.serialize(content));
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error while filtering command", e);
+            event.setCancelled(true);
         }
     }
 }

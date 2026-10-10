@@ -27,12 +27,21 @@ public class TabCompleteFilterListener implements Listener {
         if (!commandFilterService.isBlocked(player.getUniqueId())) return;
 
         Set<String> allowedNames = definitionCollector.getAllowedDuringAuthCommandNames();
+        String cursor = event.getCursor() != null ? event.getCursor() : "";
+        String normalized = AliasNormalizer.normalize(cursor);
+        String firstWord = AliasNormalizer.firstWord(normalized);
+
+        if (!normalized.isEmpty() && !allowedNames.contains(firstWord)) {
+            event.getSuggestions().clear();
+            event.setCancelled(true);
+            return;
+        }
 
         event.getSuggestions().removeIf(suggestion -> {
             if (suggestion == null || suggestion.isBlank()) return true;
 
-            String normalized = AliasNormalizer.normalize(suggestion);
-            return !allowedNames.contains(AliasNormalizer.firstWord(normalized));
+            String suggestionNormalized = AliasNormalizer.normalize(suggestion);
+            return !allowedNames.contains(AliasNormalizer.firstWord(suggestionNormalized));
         });
 
         if (event.getSuggestions().isEmpty())
