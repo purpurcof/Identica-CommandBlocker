@@ -9,23 +9,16 @@ import me.whereareiam.identica.event.scenario.registration.RegistrationResolvedE
 import me.whereareiam.identica.event.scenario.migration.MigrationRequiredEvent;
 import me.whereareiam.identica.event.scenario.migration.MigrationResolvedEvent;
 import me.whereareiam.identica.identity.actor.Identity;
-import me.whereareiam.identica.replication.cache.ReplicatedCache;
 import me.whereareiam.keystone.Actor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @DisplayName("Default Command Filter Service")
@@ -33,16 +26,7 @@ class DefaultCommandFilterServiceTest {
 
     private final CommandDefinitionCollector definitionCollector = mock(CommandDefinitionCollector.class);
 
-    @SuppressWarnings("unchecked")
-    private final ReplicatedCache<UUID> blockedCache = (ReplicatedCache<UUID>) mock(ReplicatedCache.class);
-
-    private final DefaultCommandFilterService service = new DefaultCommandFilterService(definitionCollector, blockedCache);
-
-    @BeforeEach
-    void setUp() {
-        when(blockedCache.put(any(), any(), anyLong())).thenReturn(CompletableFuture.completedFuture(null));
-        when(blockedCache.invalidate(any())).thenReturn(CompletableFuture.completedFuture(null));
-    }
+    private final DefaultCommandFilterService service = new DefaultCommandFilterService(definitionCollector);
 
     private static AuthenticationRequiredEvent authRequired(UUID connectionId) {
         AuthenticationRequiredEvent event = mock(AuthenticationRequiredEvent.class);
@@ -86,6 +70,47 @@ class DefaultCommandFilterServiceTest {
         Actor console = mock(Actor.class);
 
         assertTrue(service.isAllowed(console, "/somecommand"));
+    }
+
+    @DisplayName("isAllowed(UUID, String) allows command for blocked connection when in allow-list")
+    @Test
+    void uuidAllowsBlockedConnectionWithAllowedCommand() {
+        UUID connectionId = UUID.randomUUID();
+        when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login"));
+
+        service.onAuthenticationRequired(authRequired(connectionId));
+
+        assertTrue(service.isAllowed(connectionId, "/login"));
+    }
+
+    @DisplayName("isAllowed(UUID, String) denies command for blocked connection when not in allow-list")
+    @Test
+    void uuidDeniesBlockedConnectionWithNotAllowedCommand() {
+        UUID connectionId = UUID.randomUUID();
+        when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of());
+
+        service.onAuthenticationRequired(authRequired(connectionId));
+
+        assertFalse(service.isAllowed(connectionId, "/tp"));
+    }
+
+    @DisplayName("isAllowed(UUID, String) allows any command for unblocked connection")
+    @Test
+    void uuidAllowsUnblockedConnection() {
+        UUID connectionId = UUID.randomUUID();
+
+        assertTrue(service.isAllowed(connectionId, "/tp"));
+    }
+
+    @DisplayName("isAllowed(UUID, String) denies blank command for blocked connection")
+    @Test
+    void uuidDeniesBlankCommandForBlockedConnection() {
+        UUID connectionId = UUID.randomUUID();
+
+        service.onAuthenticationRequired(authRequired(connectionId));
+
+        assertFalse(service.isAllowed(connectionId, ""));
+        assertFalse(service.isAllowed(connectionId, " "));
     }
 
     @DisplayName("Allows identity not in blocked set")
@@ -172,25 +197,14 @@ class DefaultCommandFilterServiceTest {
         assertTrue(service.isAllowed(identity, "/anycommand"));
     }
 
-    @DisplayName("Puts connectionId into cache and adds to local set on AuthenticationRequired")
+    @DisplayName("Adds to local set on AuthenticationRequired")
     @Test
-    void putsOnAuthenticationRequired() {
+    void addsLocalOnAuthenticationRequired() {
         UUID connectionId = UUID.randomUUID();
 
         service.onAuthenticationRequired(authRequired(connectionId));
 
-        verify(blockedCache).put(eq(connectionId.toString()), eq(connectionId));
         assertTrue(service.isBlocked(connectionId));
-    }
-
-    @DisplayName("Invalidates connectionId on AuthenticationResolved")
-    @Test
-    void invalidatesOnAuthenticationResolved() {
-        UUID connectionId = UUID.randomUUID();
-
-        service.onAuthenticationResolved(authResolved(connectionId));
-
-        verify(blockedCache).invalidate(eq(connectionId.toString()));
     }
 
     @DisplayName("Adds to local set on RegistrationRequired")

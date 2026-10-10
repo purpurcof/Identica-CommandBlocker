@@ -13,7 +13,6 @@ import me.whereareiam.identica.event.scenario.registration.RegistrationResolvedE
 import me.whereareiam.identica.event.scenario.migration.MigrationRequiredEvent;
 import me.whereareiam.identica.event.scenario.migration.MigrationResolvedEvent;
 import me.whereareiam.identica.identity.actor.Identity;
-import me.whereareiam.identica.replication.cache.ReplicatedCache;
 import me.whereareiam.keystone.Actor;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +26,6 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
     private final Set<UUID> blockedConnections = ConcurrentHashMap.newKeySet();
 
     private final CommandDefinitionCollector definitionCollector;
-    private final ReplicatedCache<UUID> blockedCache;
 
     @Override
     public boolean isAllowed(@NotNull Actor actor, @NotNull String commandLine) {
@@ -42,50 +40,46 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
     }
 
     @Override
+    public boolean isAllowed(@NotNull UUID connectionUniqueId, @NotNull String commandLine) {
+        if (commandLine.isBlank()) return false;
+        if (!isBlocked(connectionUniqueId)) return true;
+
+        return isAllowedCommand(commandLine);
+    }
+
+    @Override
     public boolean isBlocked(@NotNull UUID connectionUniqueId) {
         return blockedConnections.contains(connectionUniqueId);
     }
 
     @IdenticEvent(EventOrder.HIGH)
     public void onAuthenticationRequired(AuthenticationRequiredEvent event) {
-        UUID connectionId = event.getConnectionUniqueId();
-        blockedConnections.add(connectionId);
-        blockedCache.put(connectionId.toString(), connectionId);
+        blockedConnections.add(event.getConnectionUniqueId());
     }
 
     @IdenticEvent(EventOrder.HIGH)
     public void onAuthenticationResolved(AuthenticationResolvedEvent event) {
-        UUID connectionId = event.getConnectionUniqueId();
-        blockedConnections.remove(connectionId);
-        blockedCache.invalidate(connectionId.toString());
+        blockedConnections.remove(event.getConnectionUniqueId());
     }
 
     @IdenticEvent(EventOrder.HIGH)
     public void onRegistrationRequired(RegistrationRequiredEvent event) {
-        UUID connectionId = event.getConnectionUniqueId();
-        blockedConnections.add(connectionId);
-        blockedCache.put(connectionId.toString(), connectionId);
+        blockedConnections.add(event.getConnectionUniqueId());
     }
 
     @IdenticEvent(EventOrder.HIGH)
     public void onRegistrationResolved(RegistrationResolvedEvent event) {
-        UUID connectionId = event.getConnectionUniqueId();
-        blockedConnections.remove(connectionId);
-        blockedCache.invalidate(connectionId.toString());
+        blockedConnections.remove(event.getConnectionUniqueId());
     }
 
     @IdenticEvent(EventOrder.HIGH)
     public void onMigrationRequired(MigrationRequiredEvent event) {
-        UUID connectionId = event.getConnectionUniqueId();
-        blockedConnections.add(connectionId);
-        blockedCache.put(connectionId.toString(), connectionId);
+        blockedConnections.add(event.getConnectionUniqueId());
     }
 
     @IdenticEvent(EventOrder.HIGH)
     public void onMigrationResolved(MigrationResolvedEvent event) {
-        UUID connectionId = event.getConnectionUniqueId();
-        blockedConnections.remove(connectionId);
-        blockedCache.invalidate(connectionId.toString());
+        blockedConnections.remove(event.getConnectionUniqueId());
     }
 
     private boolean isAllowedCommand(String commandLine) {

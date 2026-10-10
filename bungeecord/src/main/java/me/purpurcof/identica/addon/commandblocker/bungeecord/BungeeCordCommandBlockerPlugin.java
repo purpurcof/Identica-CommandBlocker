@@ -11,13 +11,9 @@ import me.whereareiam.identica.Registry;
 import me.whereareiam.identica.Reloadable;
 import me.whereareiam.identica.config.ConfigurationTypeResolver;
 import me.whereareiam.identica.identity.IdentityService;
-import me.whereareiam.identica.model.replication.ReplicationType;
-import me.whereareiam.identica.replication.ReplicationSystem;
-import me.whereareiam.identica.replication.cache.ReplicatedCache;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import net.md_5.bungee.api.plugin.Plugin;
-import java.util.UUID;
 
 public class BungeeCordCommandBlockerPlugin extends Plugin {
 
@@ -34,18 +30,13 @@ public class BungeeCordCommandBlockerPlugin extends Plugin {
         IdentityService identityService = IdenticaAPI.getPresenceService();
         CommandDefinitionCollector definitionCollector = new DefaultCommandDefinitionCollector(config);
 
-        ReplicationSystem replicationSystem = IdenticaAPI.getReplicationSystem();
-        ReplicatedCache<UUID> blockedCache = replicationSystem
-                .cache("commandblocker:blocked")
-                .defaultTtl(300_000)
-                .replicated(ReplicationType.identity(UUID.class));
-        DefaultCommandFilterService filterService = new DefaultCommandFilterService(definitionCollector, blockedCache);
+        DefaultCommandFilterService filterService = new DefaultCommandFilterService(definitionCollector);
         IdenticaAPI.getEventManager().register(filterService);
 
         IdenticaAPI.getService(Key.get(new TypeLiteral<Registry<Reloadable>>() {})).register((Reloadable) definitionCollector);
 
         CommandBlockerListener commandBlocker = new CommandBlockerListener(
-                filterService, identityService, config.getPrefix(), config.getBlockedMessage());
+                filterService, identityService, config);
         TabCompleteFilterListener tabFilter = new TabCompleteFilterListener(
                 filterService, definitionCollector);
 

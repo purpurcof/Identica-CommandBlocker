@@ -24,7 +24,6 @@ public class TabCompleteFilterListener {
         if (!commandFilterService.isBlocked(player.getUniqueId())) return;
 
         Set<String> allowed = definitionCollector.getAllowedDuringAuthCommandNames();
-        if (allowed.isEmpty()) return;
 
         Set<String> toRemove = event.getRootNode().getChildren().stream()
                 .map(CommandNode::getName)

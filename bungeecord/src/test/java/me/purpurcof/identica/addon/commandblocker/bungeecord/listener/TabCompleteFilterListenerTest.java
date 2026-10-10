@@ -53,7 +53,7 @@ class TabCompleteFilterListenerTest {
         listener.onEvent(event);
     }
 
-    @DisplayName("Filters suggestions for blocked players when identity not found")
+    @DisplayName("Filters suggestions for blocked players when cursor first word is allowed")
     @Test
     void filtersSuggestionsForBlockedPlayers() {
         UUID playerId = UUID.randomUUID();
@@ -65,6 +65,7 @@ class TabCompleteFilterListenerTest {
 
         TabCompleteEvent event = mock(TabCompleteEvent.class);
         when(event.getSender()).thenReturn(player);
+        when(event.getCursor()).thenReturn("/");
         List<String> suggestions = new ArrayList<>(List.of("/login", "/tp"));
         when(event.getSuggestions()).thenReturn(suggestions);
 
@@ -85,6 +86,7 @@ class TabCompleteFilterListenerTest {
 
         TabCompleteEvent event = mock(TabCompleteEvent.class);
         when(event.getSender()).thenReturn(player);
+        when(event.getCursor()).thenReturn("/");
         List<String> suggestions = new ArrayList<>(List.of("/login", "/tp", "/gamemode", "/auth"));
         when(event.getSuggestions()).thenReturn(suggestions);
 
@@ -105,6 +107,7 @@ class TabCompleteFilterListenerTest {
 
         TabCompleteEvent event = mock(TabCompleteEvent.class);
         when(event.getSender()).thenReturn(player);
+        when(event.getCursor()).thenReturn("");
         List<String> suggestions = new ArrayList<>(List.of("login", "tp"));
         when(event.getSuggestions()).thenReturn(suggestions);
 
@@ -125,6 +128,7 @@ class TabCompleteFilterListenerTest {
 
         TabCompleteEvent event = mock(TabCompleteEvent.class);
         when(event.getSender()).thenReturn(player);
+        when(event.getCursor()).thenReturn("/");
         List<String> suggestions = new ArrayList<>(List.of("/credential", "/tp"));
         when(event.getSuggestions()).thenReturn(suggestions);
 
@@ -145,6 +149,7 @@ class TabCompleteFilterListenerTest {
 
         TabCompleteEvent event = mock(TabCompleteEvent.class);
         when(event.getSender()).thenReturn(player);
+        when(event.getCursor()).thenReturn("/");
         List<String> suggestions = new ArrayList<>();
         suggestions.add(null);
         suggestions.add(" ");
@@ -155,5 +160,26 @@ class TabCompleteFilterListenerTest {
         listener.onEvent(event);
 
         assertEquals(List.of("/login"), suggestions);
+    }
+
+    @DisplayName("Clears all suggestions when cursor first word is not allowed")
+    @Test
+    void clearsSuggestionsWhenCursorNotAllowed() {
+        UUID playerId = UUID.randomUUID();
+        ProxiedPlayer player = mock(ProxiedPlayer.class);
+        when(player.getUniqueId()).thenReturn(playerId);
+        when(commandFilterService.isBlocked(playerId)).thenReturn(true);
+
+        when(definitionCollector.getAllowedDuringAuthCommandNames()).thenReturn(Set.of("login"));
+
+        TabCompleteEvent event = mock(TabCompleteEvent.class);
+        when(event.getSender()).thenReturn(player);
+        when(event.getCursor()).thenReturn("/tp");
+        List<String> suggestions = new ArrayList<>(List.of("/tp", "/gamemode"));
+        when(event.getSuggestions()).thenReturn(suggestions);
+
+        listener.onEvent(event);
+
+        assertEquals(List.of(), suggestions);
     }
 }

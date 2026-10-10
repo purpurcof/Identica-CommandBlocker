@@ -12,9 +12,8 @@ public class CommandBlockerConfigDefaults implements DefaultsProvider<CommandBlo
                 "login", "l", "pass", "passconfirm",
                 "auth", "identica",
                 "enroll",
-                "2fa", "2fa status", "2fa enroll", "2fa confirm",
-                "2fa enroll confirm", "2fa use", "2fa disable", "2fa enroll cancel",
-                "credential", "credential confirm", "credential cancel"
+                "2fa",
+                "credential"
         ));
         config.setPrefix("<green>Identica</green> <dark_gray>| ");
         config.setBlockedMessage("<white>You must <red>authenticate</red> before using this command.</white>");
