@@ -248,4 +248,36 @@ class DefaultCommandFilterServiceTest {
 
         assertFalse(service.isBlocked(connectionId));
     }
+
+    @DisplayName("A multi-word entry allows exactly that sub-command, with or without further arguments")
+    @Test
+    void multiWordEntryAllowsOnlyThatSubCommand() {
+        UUID connectionId = UUID.randomUUID();
+        when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("2fa status"));
+        service.onAuthenticationRequired(authRequired(connectionId));
+
+        assertTrue(service.isAllowed(connectionId, "/2fa status"));
+        assertTrue(service.isAllowed(connectionId, "/2FA Status all"));
+        assertFalse(service.isAllowed(connectionId, "/2fa disable"));
+        assertFalse(service.isAllowed(connectionId, "/2fa"));
+    }
+
+    @DisplayName("Lookalike command lines are not allowed")
+    @Test
+    void lookalikesAreDenied() {
+        UUID connectionId = UUID.randomUUID();
+        when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login"));
+        service.onAuthenticationRequired(authRequired(connectionId));
+
+        assertFalse(service.isAllowed(connectionId, "/loginx"));
+        assertFalse(service.isAllowed(connectionId, "//login"));
+        assertFalse(service.isAllowed(connectionId, "/ login"));
+        assertFalse(service.isAllowed(connectionId, "/bungeecord:login"));
+    }
+
+    @DisplayName("A null connection id is never blocked (and does not throw)")
+    @Test
+    void nullConnectionIdIsNotBlocked() {
+        assertFalse(service.isBlocked(null));
+    }
 }

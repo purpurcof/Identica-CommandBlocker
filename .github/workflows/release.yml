@@ -20,13 +20,13 @@ jobs:
       release-url: ${{ steps.release.outputs.release-url }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release-tag || github.ref }}
 
       - name: Resolve release metadata
         id: release
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           INPUT_RELEASE_TAG: ${{ inputs.release-tag }}
         with:
@@ -66,7 +66,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.prepare.outputs.release-tag }}
 
@@ -81,12 +81,15 @@ jobs:
 
       - name: Move jars
         shell: bash
+        env:
+          PROJECT_NAME: ${{ needs.prepare.outputs.name }}
+          PROJECT_VERSION: ${{ needs.prepare.outputs.version }}
         run: |
-          mv velocity/build/libs/*.jar output/${{ needs.prepare.outputs.name }}-Velocity-${{ needs.prepare.outputs.version }}.jar
-          mv bungeecord/build/libs/*.jar output/${{ needs.prepare.outputs.name }}-BungeeCord-${{ needs.prepare.outputs.version }}.jar
+          mv velocity/build/libs/*.jar "output/${PROJECT_NAME}-Velocity-${PROJECT_VERSION}.jar"
+          mv bungeecord/build/libs/*.jar "output/${PROJECT_NAME}-BungeeCord-${PROJECT_VERSION}.jar"
 
       - name: Release
-        uses: softprops/action-gh-release@v3.0.2
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         if: ${{ github.event_name == 'release' && startsWith(github.ref, 'refs/tags/') }}
         with:
           files: |
@@ -94,7 +97,7 @@ jobs:
             output/${{ needs.prepare.outputs.name }}-BungeeCord-${{ needs.prepare.outputs.version }}.jar
 
       - name: Upload distribution artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: Release Artifacts
           path: output/

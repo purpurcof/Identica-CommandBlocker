@@ -8,6 +8,7 @@ import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCol
 import me.purpurcof.identica.addon.commandblocker.service.CommandFilterService;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,7 +28,7 @@ public class TabCompleteFilterListener {
 
         Set<String> toRemove = event.getRootNode().getChildren().stream()
                 .map(CommandNode::getName)
-                .filter(name -> !allowed.contains(name))
+                .filter(name -> !allowed.contains(name.toLowerCase(Locale.ROOT)))
                 .collect(Collectors.toSet());
 
         for (String name : toRemove) {

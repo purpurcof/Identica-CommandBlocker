@@ -30,7 +30,7 @@ import java.nio.file.Path;
 @Plugin(
         id = "identica-commandblocker",
         name = "Identica-CommandBlocker",
-        version = "1.4.0",
+        version = BuildConstants.VERSION,
         description = "Blocks commands during authentication",
         authors = {"purpurcof"},
         dependencies = {
