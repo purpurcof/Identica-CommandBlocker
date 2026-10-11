@@ -81,12 +81,15 @@ jobs:
 
       - name: Move jars
         shell: bash
+        env:
+          PROJECT_NAME: ${{ needs.prepare.outputs.name }}
+          PROJECT_VERSION: ${{ needs.prepare.outputs.version }}
         run: |
-          mv velocity/build/libs/*.jar output/${{ needs.prepare.outputs.name }}-Velocity-${{ needs.prepare.outputs.version }}.jar
-          mv bungeecord/build/libs/*.jar output/${{ needs.prepare.outputs.name }}-BungeeCord-${{ needs.prepare.outputs.version }}.jar
+          mv velocity/build/libs/*.jar "output/${PROJECT_NAME}-Velocity-${PROJECT_VERSION}.jar"
+          mv bungeecord/build/libs/*.jar "output/${PROJECT_NAME}-BungeeCord-${PROJECT_VERSION}.jar"
 
       - name: Release
-        uses: softprops/action-gh-release@v3.0.2
+        uses: softprops/action-gh-release@v3
         if: ${{ github.event_name == 'release' && startsWith(github.ref, 'refs/tags/') }}
         with:
           files: |
