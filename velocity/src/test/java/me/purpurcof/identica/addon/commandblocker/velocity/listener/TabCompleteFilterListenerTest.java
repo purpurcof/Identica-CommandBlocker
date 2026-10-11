@@ -101,6 +101,28 @@ class TabCompleteFilterListenerTest {
         assertEquals(Set.of("login", "auth"), names);
     }
 
+    @DisplayName("Hides every command from blocked players when the allow-list is empty")
+    @Test
+    void removesEverythingWhenAllowListIsEmpty() {
+        UUID playerId = UUID.randomUUID();
+        Player player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(playerId);
+        when(commandFilterService.isBlocked(playerId)).thenReturn(true);
+        when(definitionCollector.getAllowedDuringAuthCommandNames()).thenReturn(Set.of());
+
+        RootCommandNode<?> rootNode = root();
+        addChild(rootNode, "login");
+        addChild(rootNode, "tp");
+
+        PlayerAvailableCommandsEvent event = mock(PlayerAvailableCommandsEvent.class);
+        when(event.getPlayer()).thenReturn(player);
+        doReturn(rootNode).when(event).getRootNode();
+
+        listener.onEvent(event);
+
+        assertEquals(0, rootNode.getChildren().size());
+    }
+
     private static <S> RootCommandNode<S> root() {
         return new RootCommandNode<>();
     }

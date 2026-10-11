@@ -20,7 +20,8 @@ public class DefaultCommandDefinitionCollector implements CommandDefinitionColle
 
     public DefaultCommandDefinitionCollector(CommandBlockerConfiguration config) {
         this.config = config;
-        reload();
+        // the configuration has just been loaded by its own constructor; no need to read it again
+        rebuildCaches();
     }
 
     @Override
@@ -28,6 +29,7 @@ public class DefaultCommandDefinitionCollector implements CommandDefinitionColle
         return cachedAliases;
     }
 
+    @Override
     public Set<String> getAllowedDuringAuthCommandNames() {
         return cachedCommandNames;
     }
@@ -35,7 +37,10 @@ public class DefaultCommandDefinitionCollector implements CommandDefinitionColle
     @Override
     public void reload() {
         config.reload();
+        rebuildCaches();
+    }
 
+    private void rebuildCaches() {
         Collection<String> raw = config.getAllowedCommands();
         this.cachedAliases = raw == null ? Collections.emptySet() : raw.stream()
                 .filter(Objects::nonNull)

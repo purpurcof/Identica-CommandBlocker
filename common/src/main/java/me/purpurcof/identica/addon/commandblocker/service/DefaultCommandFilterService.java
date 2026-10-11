@@ -49,7 +49,8 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
 
     @Override
     public boolean isBlocked(@NotNull UUID connectionUniqueId) {
-        return blockedConnections.contains(connectionUniqueId);
+        // ConcurrentHashMap rejects null keys; a connection without a UUID can never be in the set
+        return connectionUniqueId != null && blockedConnections.contains(connectionUniqueId);
     }
 
     @IdenticEvent(EventOrder.HIGH)
@@ -86,10 +87,6 @@ public class DefaultCommandFilterService implements CommandFilterService, EventL
         String normalized = AliasNormalizer.normalize(commandLine);
         if (normalized.isEmpty()) return false;
 
-        Set<String> allowedAliases = definitionCollector.getAllowedDuringAuthAliases();
-
-        if (allowedAliases.contains(normalized)) return true;
-
-        return allowedAliases.contains(AliasNormalizer.firstWord(normalized));
+        return AliasNormalizer.matchesAllowed(definitionCollector.getAllowedDuringAuthAliases(), normalized);
     }
 }

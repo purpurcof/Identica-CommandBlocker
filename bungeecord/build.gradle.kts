@@ -8,6 +8,13 @@ dependencies {
     implementation(libs.attache.bungeecord)
 
     testImplementation(libs.bungeecord)
+    testImplementation(libs.configura)
+}
+
+tasks.processResources {
+    val properties = mapOf("version" to project.version.toString())
+    inputs.properties(properties)
+    filesMatching("bungee.yml") { expand(properties) }
 }
 
 tasks.shadowJar {
