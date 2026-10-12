@@ -1,6 +1,5 @@
 package me.purpurcof.identica.addon.commandblocker.bungeecord;
 
-import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
 import me.purpurcof.identica.addon.commandblocker.collector.DefaultCommandDefinitionCollector;
 import me.purpurcof.identica.addon.commandblocker.config.CommandBlockerConfiguration;
 import me.purpurcof.identica.addon.commandblocker.service.DefaultCommandFilterService;
@@ -9,11 +8,12 @@ import me.purpurcof.identica.addon.commandblocker.bungeecord.listener.TabComplet
 import me.whereareiam.identica.IdenticaAPI;
 import me.whereareiam.identica.Registry;
 import me.whereareiam.identica.Reloadable;
-import me.whereareiam.identica.config.ConfigurationTypeResolver;
 import me.whereareiam.identica.identity.IdentityService;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import net.md_5.bungee.api.plugin.Plugin;
+
+import java.util.logging.Level;
 
 public class BungeeCordCommandBlockerPlugin extends Plugin {
 
@@ -24,16 +24,21 @@ public class BungeeCordCommandBlockerPlugin extends Plugin {
             return;
         }
 
-        ConfigurationTypeResolver typeResolver = IdenticaAPI.getService(ConfigurationTypeResolver.class);
-        CommandBlockerConfiguration config = new CommandBlockerConfiguration(getDataFolder().toPath(), typeResolver);
+        CommandBlockerConfiguration config;
+        try {
+            config = new CommandBlockerConfiguration(getDataFolder().toPath(), IdenticaAPI.getConfigura());
+        } catch (LinkageError | RuntimeException e) {
+            getLogger().log(Level.SEVERE, "Could not set up the settings through Identica's Configura; the command blocker will NOT work. This addon needs an Identica build that provides IdenticaAPI.getConfigura() (dev 63f5499 or newer) and must be able to see Identica's Configura classes.", e);
+            return;
+        }
 
         IdentityService identityService = IdenticaAPI.getPresenceService();
-        CommandDefinitionCollector definitionCollector = new DefaultCommandDefinitionCollector(config);
+        DefaultCommandDefinitionCollector definitionCollector = new DefaultCommandDefinitionCollector(config);
 
         DefaultCommandFilterService filterService = new DefaultCommandFilterService(definitionCollector);
         IdenticaAPI.getEventManager().register(filterService);
 
-        IdenticaAPI.getService(Key.get(new TypeLiteral<Registry<Reloadable>>() {})).register((Reloadable) definitionCollector);
+        IdenticaAPI.getService(Key.get(new TypeLiteral<Registry<Reloadable>>() {})).register(definitionCollector);
 
         CommandBlockerListener commandBlocker = new CommandBlockerListener(
                 filterService, identityService, config);

@@ -1,12 +1,11 @@
 plugins {
     id("platform-conventions")
-    alias(libs.plugins.attache)
 }
 
 dependencies {
     compileOnly(libs.velocity)
     annotationProcessor(libs.velocity)
-    implementation(libs.attache.velocity)
+    compileOnly(libs.configura)
 
     testImplementation(libs.velocity)
     testImplementation(libs.configura)
