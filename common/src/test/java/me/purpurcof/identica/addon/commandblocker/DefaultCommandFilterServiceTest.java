@@ -2,13 +2,8 @@ package me.purpurcof.identica.addon.commandblocker;
 
 import me.purpurcof.identica.addon.commandblocker.collector.CommandDefinitionCollector;
 import me.purpurcof.identica.addon.commandblocker.service.DefaultCommandFilterService;
-import me.whereareiam.identica.event.scenario.authentication.AuthenticationRequiredEvent;
-import me.whereareiam.identica.event.scenario.authentication.AuthenticationResolvedEvent;
-import me.whereareiam.identica.event.scenario.registration.RegistrationRequiredEvent;
-import me.whereareiam.identica.event.scenario.registration.RegistrationResolvedEvent;
-import me.whereareiam.identica.event.scenario.migration.MigrationRequiredEvent;
-import me.whereareiam.identica.event.scenario.migration.MigrationResolvedEvent;
 import me.whereareiam.identica.identity.actor.Identity;
+import me.whereareiam.identica.pipeline.PendingScenarioService;
 import me.whereareiam.keystone.Actor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,44 +19,13 @@ import static org.mockito.Mockito.when;
 @DisplayName("Default Command Filter Service")
 class DefaultCommandFilterServiceTest {
 
+    private final PendingScenarioService pendingScenarios = mock(PendingScenarioService.class);
     private final CommandDefinitionCollector definitionCollector = mock(CommandDefinitionCollector.class);
 
-    private final DefaultCommandFilterService service = new DefaultCommandFilterService(definitionCollector);
+    private final DefaultCommandFilterService service = new DefaultCommandFilterService(pendingScenarios, definitionCollector);
 
-    private static AuthenticationRequiredEvent authRequired(UUID connectionId) {
-        AuthenticationRequiredEvent event = mock(AuthenticationRequiredEvent.class);
-        when(event.getConnectionUniqueId()).thenReturn(connectionId);
-        return event;
-    }
-
-    private static AuthenticationResolvedEvent authResolved(UUID connectionId) {
-        AuthenticationResolvedEvent event = mock(AuthenticationResolvedEvent.class);
-        when(event.getConnectionUniqueId()).thenReturn(connectionId);
-        return event;
-    }
-
-    private static RegistrationRequiredEvent regRequired(UUID connectionId) {
-        RegistrationRequiredEvent event = mock(RegistrationRequiredEvent.class);
-        when(event.getConnectionUniqueId()).thenReturn(connectionId);
-        return event;
-    }
-
-    private static RegistrationResolvedEvent regResolved(UUID connectionId) {
-        RegistrationResolvedEvent event = mock(RegistrationResolvedEvent.class);
-        when(event.getConnectionUniqueId()).thenReturn(connectionId);
-        return event;
-    }
-
-    private static MigrationRequiredEvent migRequired(UUID connectionId) {
-        MigrationRequiredEvent event = mock(MigrationRequiredEvent.class);
-        when(event.getConnectionUniqueId()).thenReturn(connectionId);
-        return event;
-    }
-
-    private static MigrationResolvedEvent migResolved(UUID connectionId) {
-        MigrationResolvedEvent event = mock(MigrationResolvedEvent.class);
-        when(event.getConnectionUniqueId()).thenReturn(connectionId);
-        return event;
+    private void pending(UUID connectionId) {
+        when(pendingScenarios.isPending(connectionId)).thenReturn(true);
     }
 
     @DisplayName("Allows non-identity actors (console)")
@@ -78,7 +42,7 @@ class DefaultCommandFilterServiceTest {
         UUID connectionId = UUID.randomUUID();
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login"));
 
-        service.onAuthenticationRequired(authRequired(connectionId));
+        pending(connectionId);
 
         assertTrue(service.isAllowed(connectionId, "/login"));
     }
@@ -89,7 +53,7 @@ class DefaultCommandFilterServiceTest {
         UUID connectionId = UUID.randomUUID();
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of());
 
-        service.onAuthenticationRequired(authRequired(connectionId));
+        pending(connectionId);
 
         assertFalse(service.isAllowed(connectionId, "/tp"));
     }
@@ -107,7 +71,7 @@ class DefaultCommandFilterServiceTest {
     void uuidDeniesBlankCommandForBlockedConnection() {
         UUID connectionId = UUID.randomUUID();
 
-        service.onAuthenticationRequired(authRequired(connectionId));
+        pending(connectionId);
 
         assertFalse(service.isAllowed(connectionId, ""));
         assertFalse(service.isAllowed(connectionId, " "));
@@ -130,7 +94,7 @@ class DefaultCommandFilterServiceTest {
         when(identity.getConnectionUniqueId()).thenReturn(connectionId);
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login"));
 
-        service.onAuthenticationRequired(authRequired(connectionId));
+        pending(connectionId);
 
         assertTrue(service.isAllowed(identity, "/login"));
     }
@@ -143,7 +107,7 @@ class DefaultCommandFilterServiceTest {
         when(identity.getConnectionUniqueId()).thenReturn(connectionId);
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of());
 
-        service.onAuthenticationRequired(authRequired(connectionId));
+        pending(connectionId);
 
         assertFalse(service.isAllowed(identity, "/tp"));
     }
@@ -155,24 +119,20 @@ class DefaultCommandFilterServiceTest {
         Identity identity = mock(Identity.class);
         when(identity.getConnectionUniqueId()).thenReturn(connectionId);
 
-        service.onAuthenticationRequired(authRequired(connectionId));
-        service.onAuthenticationResolved(authResolved(connectionId));
+        when(pendingScenarios.isPending(connectionId)).thenReturn(false);
 
         assertTrue(service.isAllowed(identity, "/tp"));
     }
 
-    @DisplayName("Tracks blocked state via isBlocked method")
+    @DisplayName("Blocks a connection exactly while Identica reports a pending scenario for it")
     @Test
-    void tracksBlockedState() {
+    void blocksWhilePending() {
         UUID connectionId = UUID.randomUUID();
 
         assertFalse(service.isBlocked(connectionId));
 
-        service.onAuthenticationRequired(authRequired(connectionId));
+        pending(connectionId);
         assertTrue(service.isBlocked(connectionId));
-
-        service.onAuthenticationResolved(authResolved(connectionId));
-        assertFalse(service.isBlocked(connectionId));
     }
 
     @DisplayName("Returns false for blank command line")
@@ -182,7 +142,7 @@ class DefaultCommandFilterServiceTest {
         Identity identity = mock(Identity.class);
         when(identity.getConnectionUniqueId()).thenReturn(connectionId);
 
-        service.onAuthenticationRequired(authRequired(connectionId));
+        pending(connectionId);
 
         assertFalse(service.isAllowed(identity, ""));
         assertFalse(service.isAllowed(identity, " "));
@@ -197,64 +157,12 @@ class DefaultCommandFilterServiceTest {
         assertTrue(service.isAllowed(identity, "/anycommand"));
     }
 
-    @DisplayName("Adds to local set on AuthenticationRequired")
-    @Test
-    void addsLocalOnAuthenticationRequired() {
-        UUID connectionId = UUID.randomUUID();
-
-        service.onAuthenticationRequired(authRequired(connectionId));
-
-        assertTrue(service.isBlocked(connectionId));
-    }
-
-    @DisplayName("Adds to local set on RegistrationRequired")
-    @Test
-    void addsLocalOnRegistrationRequired() {
-        UUID connectionId = UUID.randomUUID();
-
-        service.onRegistrationRequired(regRequired(connectionId));
-
-        assertTrue(service.isBlocked(connectionId));
-    }
-
-    @DisplayName("Removes from local set on RegistrationResolved")
-    @Test
-    void removesLocalOnRegistrationResolved() {
-        UUID connectionId = UUID.randomUUID();
-        service.onRegistrationRequired(regRequired(connectionId));
-
-        service.onRegistrationResolved(regResolved(connectionId));
-
-        assertFalse(service.isBlocked(connectionId));
-    }
-
-    @DisplayName("Adds to local set on MigrationRequired")
-    @Test
-    void addsLocalOnMigrationRequired() {
-        UUID connectionId = UUID.randomUUID();
-
-        service.onMigrationRequired(migRequired(connectionId));
-
-        assertTrue(service.isBlocked(connectionId));
-    }
-
-    @DisplayName("Removes from local set on MigrationResolved")
-    @Test
-    void removesLocalOnMigrationResolved() {
-        UUID connectionId = UUID.randomUUID();
-        service.onMigrationRequired(migRequired(connectionId));
-
-        service.onMigrationResolved(migResolved(connectionId));
-
-        assertFalse(service.isBlocked(connectionId));
-    }
-
     @DisplayName("A multi-word entry allows exactly that sub-command, with or without further arguments")
     @Test
     void multiWordEntryAllowsOnlyThatSubCommand() {
         UUID connectionId = UUID.randomUUID();
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("2fa status"));
-        service.onAuthenticationRequired(authRequired(connectionId));
+        pending(connectionId);
 
         assertTrue(service.isAllowed(connectionId, "/2fa status"));
         assertTrue(service.isAllowed(connectionId, "/2FA Status all"));
@@ -267,7 +175,7 @@ class DefaultCommandFilterServiceTest {
     void lookalikesAreDenied() {
         UUID connectionId = UUID.randomUUID();
         when(definitionCollector.getAllowedDuringAuthAliases()).thenReturn(Set.of("login"));
-        service.onAuthenticationRequired(authRequired(connectionId));
+        pending(connectionId);
 
         assertFalse(service.isAllowed(connectionId, "/loginx"));
         assertFalse(service.isAllowed(connectionId, "//login"));

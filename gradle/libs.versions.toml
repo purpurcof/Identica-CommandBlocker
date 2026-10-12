@@ -1,5 +1,5 @@
 [versions]
-identica = "dev-63f5499"
+identica = "dev-b3ab26d"
 configura = "2.0.1"
 keystone = "1.0.0"
 guice = "7.0.0"

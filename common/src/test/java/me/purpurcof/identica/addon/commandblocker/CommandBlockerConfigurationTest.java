@@ -43,7 +43,7 @@ class CommandBlockerConfigurationTest {
         CommandBlockerConfiguration config = create();
 
         assertTrue(Files.exists(settingsFile()));
-        assertTrue(config.getAllowedCommands().contains("login"));
+        assertTrue(config.getAllowedCommands().isEmpty(), "Identica's own login commands are allowed without listing them");
         assertNotNull(config.getPrefix());
         assertNotNull(config.getBlockedMessage());
     }
@@ -56,16 +56,15 @@ class CommandBlockerConfigurationTest {
         assertEquals(first, List.copyOf(create().getAllowedCommands()));
     }
 
-    @DisplayName("Entries removed by the server owner are not brought back by the defaults")
+    @DisplayName("Entries the server owner adds are kept across reloads")
     @Test
-    void removedEntriesStayRemoved() throws IOException {
+    void addedEntriesAreKept() throws IOException {
         CommandBlockerConfiguration config = create();
         Path file = settingsFile();
-        Files.writeString(file, Files.readString(file).replaceAll("(?m)^\\s*-\\s*\"?login\"?\\s*\\R", ""));
+        Files.writeString(file, Files.readString(file).replaceAll("(?m)^(allowed-commands|allowedCommands):.*$", "$1:\n  - \"rules\""));
 
         config.reload();
 
-        assertFalse(config.getAllowedCommands().contains("login"));
-        assertTrue(config.getAllowedCommands().contains("pass"));
+        assertEquals(List.of("rules"), config.getAllowedCommands());
     }
 }
