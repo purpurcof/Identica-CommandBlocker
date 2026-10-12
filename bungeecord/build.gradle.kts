@@ -1,11 +1,10 @@
 plugins {
     id("platform-conventions")
-    alias(libs.plugins.attache)
 }
 
 dependencies {
     compileOnly(libs.bungeecord)
-    implementation(libs.attache.bungeecord)
+    compileOnly(libs.configura)
 
     testImplementation(libs.bungeecord)
     testImplementation(libs.configura)

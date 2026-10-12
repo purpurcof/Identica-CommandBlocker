@@ -19,7 +19,7 @@ Addon-plugin for [Identica](https://github.com/whereareiam/Identica) that blocks
 ### Requirements
 
 * **Dependencies:**
-  * [Identica 3.0.0](https://github.com/whereareiam/Identica)
+  * [Identica](https://github.com/whereareiam/Identica) dev build `63f5499` or newer (the unreleased 3.0.0 line)
 * **Platforms:**
   * Velocity
   * BungeeCord (untested, may work)
@@ -44,4 +44,8 @@ The default list contains the bare `identica`, which allows every `/identica ...
 
 * **Velocity:** the command tree sent to the player is filtered.
 * **BungeeCord:** only completion that BungeeCord routes through its events can be filtered (arguments, proxy-side completion). Clients on 1.13+ complete command *names* from the tree their backend server sent, which BungeeCord does not expose to plugins.
+
+### Configuration
+
+The settings file is read and written through Identica's own configuration library (`IdenticaAPI.getConfigura()`), so it uses the same file format as the rest of Identica and the addon does not download or bundle a library of its own.
 

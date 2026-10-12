@@ -1,9 +1,6 @@
 package me.purpurcof.identica.addon.commandblocker.config;
 
-import me.whereareiam.configura.Config;
 import me.whereareiam.configura.Configura;
-import me.whereareiam.configura.type.Format;
-import me.whereareiam.identica.config.ConfigurationTypeResolver;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -14,12 +11,13 @@ public class CommandBlockerConfiguration {
     private final Path path;
     private volatile CommandBlockerConfig data;
 
-    public CommandBlockerConfiguration(Path dataDirectory, ConfigurationTypeResolver typeResolver) {
-        Format format = typeResolver != null ? typeResolver.getConfigurationType() : Format.YAML;
-        this.config = Config.builder()
-                .format(format)
-                .defaults(CommandBlockerConfigDefaults.class)
-                .build();
+    /**
+     * @param base Identica's shared Configura instance ({@code IdenticaAPI.getConfigura()}); the settings file
+     *             is read and written in the format Identica is configured with, using Identica's own copy of
+     *             the library
+     */
+    public CommandBlockerConfiguration(Path dataDirectory, Configura base) {
+        this.config = base.withDefaults(CommandBlockerConfigDefaults.class);
         this.path = dataDirectory.resolve("settings");
         this.data = load();
     }
