@@ -51,3 +51,15 @@ The list is empty on a new installation. `/identica admin reload` also reloads i
 
 The settings file is read and written through Identica's own configuration library (`IdenticaAPI.get().getConfigura()`), so it uses the same file format as the rest of Identica and the addon does not download or bundle a library of its own.
 
+
+### Live tests
+
+The `testing` module starts the packaged addon on a real Velocity proxy next to Identica, with a Paper backend, and drives simulated players through it with [Anvil](https://github.com/whereareiam/anvil). Unit tests stay in their own modules; `./gradlew test` does not start these.
+
+Identica's plugin and Credential provider jars are not Maven artifacts, so pass them in. Java 25 is needed, and the first run downloads the proxy and server:
+
+```shell
+./gradlew :testing:anvilTest -Pidentica.jar=/path/to/identica.jar -Pidentica.credential.jar=/path/to/credential.jar
+```
+
+`IDENTICA_JAR` and `IDENTICA_CREDENTIAL_JAR` work as well. A failed test keeps its network under `testing/build/anvil/`, with an `anvil-console.log` per process. The *Live tests* workflow runs the same task on request.

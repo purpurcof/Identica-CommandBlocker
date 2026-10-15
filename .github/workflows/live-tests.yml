@@ -1,0 +1,45 @@
+name: Live tests
+
+# Starts a real Velocity proxy and Paper server with Anvil (https://github.com/whereareiam/anvil) and drives simulated
+# players through the packaged Identica-CommandBlocker. Identica's jars are not Maven artifacts, so the run is given download links.
+on:
+  workflow_dispatch:
+    inputs:
+      identica-jar-url:
+        description: Direct download link of the Identica proxy plugin jar (dev build b3ab26d or newer).
+        required: true
+        type: string
+      credential-jar-url:
+        description: Direct download link of Identica's Credential provider jar.
+        required: true
+        type: string
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Download Identica
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/identica"
+          curl -fsSL "${{ inputs.identica-jar-url }}" -o "$RUNNER_TEMP/identica/identica.jar"
+          curl -fsSL "${{ inputs.credential-jar-url }}" -o "$RUNNER_TEMP/identica/credential.jar"
+          echo "IDENTICA_JAR=$RUNNER_TEMP/identica/identica.jar" >> "$GITHUB_ENV"
+          echo "IDENTICA_CREDENTIAL_JAR=$RUNNER_TEMP/identica/credential.jar" >> "$GITHUB_ENV"
+
+      - name: Run live tests
+        uses: ./.github/actions/gradle-build
+        with:
+          gradle-command: ./gradlew --no-daemon :testing:anvilTest
+          test-results-artifact-name: Live test results
+          test-results-path: |
+            testing/build/test-results/anvilTest/*.xml
+            testing/build/anvil/**/anvil-console.log
+          use-test-reporter: 'false'
