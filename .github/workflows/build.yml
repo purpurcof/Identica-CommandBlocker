@@ -9,7 +9,7 @@ on:
 
 jobs:
   prepare:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       name: ${{ steps.details.outputs.name }}
       version: ${{ steps.details.outputs.version }}
@@ -27,7 +27,7 @@ jobs:
 
   build:
     needs: prepare
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       checks: write
