@@ -1,0 +1,48 @@
+name: Live tests
+
+# Starts a real Velocity proxy and Paper servers with Anvil (https://github.com/whereareiam/anvil) and drives
+# simulated players through the packaged Identica-CommandBlocker next to the Identica release the tests are pinned to.
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+  push:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+concurrency:
+  group: live-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live:
+    name: Live tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # The proxy and server distributions, protocol library and Java runtimes Anvil downloads on first use.
+      - name: Restore what Anvil downloads
+        uses: whereareiam/anvil-actions/setup@v1
+
+      - name: Run the live tests
+        uses: ./.github/actions/gradle-build
+        with:
+          gradle-command: ./gradlew --no-daemon :testing:anvil
+          upload-test-results: 'false'
+          use-test-reporter: 'false'
+
+      # A failed test keeps its network, whose console logs tell what the proxy did.
+      - name: Report the failed scenarios
+        if: failure()
+        uses: whereareiam/anvil-actions/report@v1
